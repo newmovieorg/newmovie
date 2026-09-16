@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جزئیات | سینماتک</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app-header"></div>
+
+<section class="detail-hero" id="detailHero">
+  <div class="wrap">
+    <div class="detail-content">
+      <div class="detail-poster" id="detailPoster"></div>
+      <div>
+        <h1 class="detail-title" id="detailTitle">در حال بارگذاری...</h1>
+        <div class="detail-tags" id="detailTags"></div>
+        <div class="detail-actions">
+          <a class="btn btn-ghost" id="trailerLink" href="#" target="_blank" rel="noopener" style="display:none;">▶ تماشای تریلر</a>
+          <button class="btn btn-ghost" id="favBtn">☆ افزودن به علاقه‌مندی‌ها</button>
+          <button class="btn btn-ghost" id="shareBtn">اشتراک‌گذاری</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap detail-body">
+  <div class="detail-section">
+    <h3>خلاصه داستان</h3>
+    <p class="detail-synopsis" id="detailSynopsis"></p>
+  </div>
+
+  <div class="detail-section" id="metaSection">
+    <h3>اطلاعات بیشتر</h3>
+    <div class="meta-grid" id="metaGrid"></div>
+  </div>
+
+  <div class="detail-section" id="castSection">
+    <h3>بازیگران</h3>
+    <div class="cast-row" id="castRow"></div>
+  </div>
+
+  <div class="detail-section" id="similarSection">
+    <h3>موارد مشابه</h3>
+    <div class="hscroll" id="similarGrid"></div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">© سینماتک — فقط معرفی فیلم، بدون آپلود محتوا</div>
+</footer>
+
+<div id="app-bottomnav"></div>
+
+<script type="module" src="js/movie-detail.js"></script>
+</body>
+</html>
