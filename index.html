@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نیو مووی | معرفی فیلم و سریال</title>
+<meta name="description" content="نیو مووی — معرفی بهترین فیلم‌ها و سریال‌ها با خلاصه داستان، امتیاز و تریلر.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app-header"></div>
+
+<section class="hero-carousel" id="heroCarousel"></section>
+
+<main class="wrap">
+  <p class="empty-note" id="emptyState" style="display:none;">هنوز فیلم یا سریالی ثبت نشده. از پنل ادمین محتوا اضافه کن.</p>
+
+  <section class="section" id="sec-latestMovies">
+    <div class="section-head"><h2 class="section-title">تازه‌ترین فیلم‌ها</h2><a class="section-link" href="movies.html">مشاهده همه ←</a></div>
+    <div class="hscroll" id="latestMovies"></div>
+  </section>
+
+  <section class="section" id="sec-popularMovies">
+    <div class="section-head"><h2 class="section-title">فیلم‌های محبوب</h2><a class="section-link" href="movies.html">مشاهده همه ←</a></div>
+    <div class="hscroll" id="popularMovies"></div>
+  </section>
+
+  <section class="section" id="sec-topRated">
+    <div class="section-head"><h2 class="section-title">برترین امتیازها</h2></div>
+    <div class="hscroll" id="topRated"></div>
+  </section>
+
+  <section class="section" id="sec-latestSeries">
+    <div class="section-head"><h2 class="section-title">تازه‌ترین سریال‌ها</h2><a class="section-link" href="series.html">مشاهده همه ←</a></div>
+    <div class="hscroll" id="latestSeries"></div>
+  </section>
+
+  <section class="section" id="sec-popularSeries">
+    <div class="section-head"><h2 class="section-title">سریال‌های محبوب</h2><a class="section-link" href="series.html">مشاهده همه ←</a></div>
+    <div class="hscroll" id="popularSeries"></div>
+  </section>
+
+  <div id="genreSections"></div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">© نیو مووی — فقط معرفی فیلم، بدون آپلود محتوا</div>
+</footer>
+
+<div id="app-bottomnav"></div>
+
+<script type="module" src="js/home.js"></script>
+</body>
+</html>
