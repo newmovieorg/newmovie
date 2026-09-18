@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سریال‌ها | نیو مووی</title>
+<meta name="description" content="لیست کامل سریال‌ها در نیو مووی — جستجو، فیلتر ژانر و سال، مرتب‌سازی بر اساس جدیدترین یا بالاترین امتیاز.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="نیو مووی">
+<meta property="og:title" content="سریال‌ها | نیو مووی">
+<meta property="og:description" content="لیست کامل سریال‌ها در نیو مووی — جستجو، فیلتر ژانر و سال، مرتب‌سازی بر اساس جدیدترین یا بالاترین امتیاز.">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="og-image.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app-header"></div>
+
+<main class="wrap page-top-pad">
+  <div class="section-head"><h2 class="section-title">همه سریال‌ها</h2></div>
+
+  <div class="filters-bar">
+    <input type="text" id="pageSearchInput" placeholder="جستجوی عنوان...">
+    <select id="filterGenre"><option value="">همه ژانرها</option></select>
+    <select id="filterYear"><option value="">همه سال‌ها</option></select>
+    <select id="filterSort">
+      <option value="new">جدیدترین</option>
+      <option value="rating">بالاترین امتیاز</option>
+      <option value="year">جدیدترین سال ساخت</option>
+    </select>
+  </div>
+
+  <div class="grid" id="resultsGrid"></div>
+
+  <div class="load-more-wrap">
+    <button class="btn btn-ghost" id="loadMoreBtn" style="display:none;">نمایش بیشتر</button>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">© نیو مووی — فقط معرفی فیلم، بدون آپلود محتوا</div>
+</footer>
+
+<div id="app-bottomnav"></div>
+
+<script type="module">
+  import { initListPage } from "./js/list-page.js";
+  initListPage("series");
+</script>
+</body>
+</html>
