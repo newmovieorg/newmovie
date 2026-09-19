@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin-panel-7k2q3/
-Disallow: /favorites.html
-Disallow: /login.html
-
-Sitemap: sitemap.xml
