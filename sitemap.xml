@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- توجه: هر سه آدرس زیر رو با دامنه‌ی واقعی که سایت روش هاست شده جایگزین کن
+     (مثلاً https://username.github.io/repo-name/) — طبق استاندارد sitemap،
+     آدرس‌ها باید کامل و مطلق باشن، نسبی معتبر نیست. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/index.html</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://example.com/movies.html</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://example.com/series.html</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+</urlset>
