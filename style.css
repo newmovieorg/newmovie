@@ -1179,6 +1179,7 @@ body.hero-page .site-header.scrolled {
 .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; }
 .footer-links a:hover { color: var(--brand); }
 .footer-note { margin: 0; color: var(--paper-faint); }
+.footer-copyright { margin: 0; color: var(--paper-faint); font-size: 0.78rem; opacity: 0.8; }
 
 @media (min-width: 640px) {
   .detail-content { grid-template-columns: 190px minmax(0, 1fr); gap: 30px; }
