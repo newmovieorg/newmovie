@@ -233,7 +233,7 @@ watchVisitor(async (user) => {
 });
 
 
-const NEW_BADGE_DAYS = 7;
+const NEW_BADGE_DAYS = 3;
 
 export function movieCardHTML(m) {
   const typeLabel = m.type === "series" ? "سریال" : "فیلم";
