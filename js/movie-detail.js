@@ -27,7 +27,9 @@ function getYouTubeEmbedUrl(url) {
       videoId = (embedMatch && embedMatch[1]) || (shortsMatch && shortsMatch[1]) || null;
     }
     if (!videoId) return null;
-    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+    // mute=1 چون اکثر مرورگرها autoplay با صدا را رد می‌کنند ولی autoplay بی‌صدا
+    // را قبول می‌کنند — بدونش تریلر اغلب اصلاً شروع به پخش نمی‌کرد.
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&rel=0`;
   } catch {
     return null;
   }
@@ -43,7 +45,7 @@ function initTrailerModal() {
   document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 }
 
-function openTrailerModal(embedUrl) {
+function openTrailerModal(embedUrl, originalUrl) {
   const overlay = document.getElementById("trailerModalOverlay");
   const frame = document.getElementById("trailerModalFrame");
   frame.innerHTML = `
@@ -55,12 +57,25 @@ function openTrailerModal(embedUrl) {
   overlay.classList.add("open");
 
   const iframe = document.getElementById("trailerModalIframe");
-  const loading = document.getElementById("trailerModalLoading");
-  const hideLoading = () => loading?.remove();
-  iframe.addEventListener("load", hideLoading);
-  // اگر رویداد load به هر دلیلی شلیک نشد (بعضی مرورگرها با iframe یوتیوب این‌طورن)،
-  // بعد از ۸ ثانیه هر حالتی، لودینگ را کنار می‌زنیم تا برای همیشه روی صفحه نماند.
-  setTimeout(hideLoading, 8000);
+  let loaded = false;
+  const markLoaded = () => {
+    loaded = true;
+    document.getElementById("trailerModalLoading")?.remove();
+  };
+  iframe.addEventListener("load", markLoaded);
+
+  // اگر بعد از یک مدت معقول هنوز لود نشده (اتصال کند یا دسترسی به یوتیوب کند/فیلتر
+  // باشد)، به‌جای اینکه لودینگ رو مخفی کنیم و کاربر فکر کنه محتوایی وجود نداره،
+  // یک راه جایگزین (باز کردن مستقیم در یوتیوب) نشون می‌دیم. اگه بعدش خودش لود بشه،
+  // همون iframe جایگزینِ این پیام می‌شه (چون markLoaded مستقل و همیشه فعاله).
+  setTimeout(() => {
+    if (loaded) return;
+    const loadingEl = document.getElementById("trailerModalLoading");
+    if (!loadingEl) return;
+    loadingEl.innerHTML = `
+      <span>بارگذاری تریلر بیشتر از حد معمول طول کشید.</span>
+      <a class="btn btn-primary" href="${originalUrl}" target="_blank" rel="noopener">تماشا در یوتیوب</a>`;
+  }, 45000);
 }
 
 const params = new URLSearchParams(location.search);
@@ -218,7 +233,7 @@ function render(m, allMovies, categories) {
     const embedUrl = getYouTubeEmbedUrl(m.trailerUrl);
     trailerBtn.style.display = "inline-flex";
     trailerBtn.onclick = embedUrl
-      ? () => openTrailerModal(embedUrl)
+      ? () => openTrailerModal(embedUrl, m.trailerUrl)
       : () => window.open(m.trailerUrl, "_blank", "noopener"); // لینک غیریوتیوبی/ناشناخته — باز کردن در تب جدید به‌جای پخش داخلی
   } else {
     trailerBtn.style.display = "none";
