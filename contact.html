@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>تماس با ما | نیو مووی</title>
+<meta name="description" content="راه‌های ارتباط با نیو مووی.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="contact">
+<div id="app-header"></div>
+<main class="wrap page-top-pad info-page" id="sitePage">
+  <div class="info-hero">
+    <span class="eyebrow">ارتباط با ما</span>
+    <h1 id="contactTitle">تماس با ما</h1>
+    <p id="contactBody"></p>
+  </div>
+  <div class="contact-layout">
+    <section class="info-card contact-details">
+      <h2>راه‌های ارتباطی</h2>
+      <a id="contactEmailLink" class="contact-row" href="mailto:hello@example.com"><span>ایمیل</span><strong>در حال بارگذاری...</strong></a>
+      <a id="contactPhoneLink" class="contact-row" href="#"><span>تلفن</span><strong>در حال بارگذاری...</strong></a>
+      <div class="contact-row"><span>آدرس</span><strong id="contactAddress">در حال بارگذاری...</strong></div>
+      <div class="social-links">
+        <a id="telegramLink" href="#" target="_blank" rel="noopener" hidden>تلگرام</a>
+        <a id="instagramLink" href="#" target="_blank" rel="noopener" hidden>اینستاگرام</a>
+      </div>
+    </section>
+    <section class="info-card">
+      <h2>پیام شما</h2>
+      <form id="contactForm" class="contact-form">
+        <label>نام<input id="contactName" type="text" autocomplete="name" placeholder="نام شما"></label>
+        <label>پیام<textarea id="contactMessage" required placeholder="پیام، پیشنهاد یا گزارش مشکل شما"></textarea></label>
+        <button class="btn btn-primary" type="submit">ارسال پیام</button>
+        <small>ارسال پیام از طریق برنامهٔ ایمیل شما انجام می‌شود.</small>
+      </form>
+    </section>
+  </div>
+</main>
+<div id="app-footer"></div><div id="app-bottomnav"></div>
+<script type="module" src="js/site-pages.js"></script>
+</body>
+</html>

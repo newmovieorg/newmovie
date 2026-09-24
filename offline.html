@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>بدون اتصال اینترنت | نیو مووی</title>
+<meta name="description" content="اتصال اینترنت برقرار نیست.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="نیو مووی">
+<meta property="og:title" content="بدون اتصال اینترنت | نیو مووی">
+<meta property="og:description" content="اتصال اینترنت برقرار نیست.">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="og-image.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .error-wrap{min-height:55vh;display:flex;align-items:center;justify-content:center;padding:20px 0 60px;}
+  .error-card{text-align:center;max-width:460px;}
+  .error-icon-badge{width:84px;height:84px;border-radius:50%;background:rgba(205,250,10,0.08);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin:0 auto 26px;color:var(--brand);box-shadow:0 0 40px var(--brand-glow) inset;}
+  .error-icon-badge svg{width:36px;height:36px;}
+  .error-code{font-size:4.5rem;font-weight:800;color:var(--brand);text-shadow:0 0 30px var(--brand-glow);line-height:1;margin:0 0 14px;letter-spacing:1px;}
+  .error-title{font-size:1.3rem;font-weight:700;margin:0 0 10px;}
+  .error-desc{color:var(--paper-dim);font-size:0.98rem;line-height:1.8;margin:0 0 30px;}
+  .error-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<div id="app-header"></div>
+
+<main class="wrap page-top-pad">
+  <div class="error-wrap">
+    <div class="error-card">
+      <div class="error-icon-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l22 22"/><path d="M16.7 16.7A5.5 5.5 0 0 0 12 15a5.5 5.5 0 0 0-4.7 1.7"/><path d="M5 12.5a11 11 0 0 1 3.6-2.5"/><path d="M19 12.5a11 11 0 0 0-4-2.7"/><path d="M8.5 8.5A15.9 15.9 0 0 1 12 8c1.3 0 2.5.2 3.7.5"/><path d="M2 8.5A19.9 19.9 0 0 1 12 5c1.7 0 3.4.2 5 .7"/><line x1="12" y1="19" x2="12" y2="19.01"/></svg>
+      </div>
+      <h1 class="error-title" style="font-size:1.5rem;margin-top:6px;">اتصال اینترنت قطعه</h1>
+      <p class="error-desc">به نظر می‌رسه به اینترنت وصل نیستی. اتصالت رو بررسی کن و دوباره تلاش کن.</p>
+      <div class="error-actions">
+        <button type="button" class="btn btn-primary" onclick="location.reload()">تلاش مجدد</button>
+        <a href="index.html" class="btn btn-ghost">بازگشت به خانه</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="app-footer"></div>
+
+<div id="app-bottomnav"></div>
+
+<script type="module">
+  import { renderChrome } from "./js/chrome.js";
+  renderChrome();
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>جزئیات | نیو مووی</title>
+<meta name="description" id="metaDescription" content="معرفی فیلم و سریال در نیو مووی — خلاصه داستان، امتیاز، بازیگران و تریلر.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
+<meta property="og:type" content="video.movie">
+<meta property="og:site_name" content="نیو مووی">
+<meta property="og:title" id="ogTitle" content="نیو مووی">
+<meta property="og:description" id="ogDescription" content="معرفی فیلم و سریال در نیو مووی — خلاصه داستان، امتیاز، بازیگران و تریلر.">
+<meta property="og:image" id="ogImage" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" id="twitterImage" content="og-image.png">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest">
+</head>
+<body class="page-loading hero-page">
+
+<div id="app-header"></div>
+
+<div class="page-loader" id="pageLoader" role="status" aria-live="polite">
+  <div class="page-loader-mark"><img src="favicon.svg" alt="نیو مووی"></div>
+  <span>لطفاً کمی صبر کنید...</span>
+</div>
+
+<section class="detail-hero" id="detailHero">
+  <div class="detail-hero-bg" id="detailHeroBg"></div>
+  <div class="detail-hero-fg" id="detailHeroFg"></div>
+  <div class="wrap">
+    <div class="detail-breadcrumb"><a href="index.html">خانه</a><span>‹</span><span id="detailBreadcrumb">جزئیات عنوان</span></div>
+    <div class="detail-content">
+      <div class="detail-poster poster-missing" id="detailPosterFrame"><span class="poster-fallback-mark">نیو مووی</span><img id="detailPoster" alt="" loading="lazy" decoding="async"></div>
+      <div class="detail-main">
+        <h1 class="detail-title" id="detailTitle">در حال بارگذاری...</h1>
+        <div class="detail-genres" id="detailGenres"></div>
+        <div class="detail-tags detail-facts" id="detailTags"></div>
+        <p class="detail-lead" id="detailLead"></p>
+        <div class="detail-actions">
+          <a class="btn btn-ghost" id="trailerLink" href="#" target="_blank" rel="noopener" style="display:none;">▶ تماشای تریلر</a>
+          <button class="btn btn-ghost" id="favBtn">افزودن به علاقه‌مندی‌ها</button>
+          <button class="btn btn-ghost" id="likeBtn">👍 <span id="likeCount">0</span></button>
+          <button class="btn btn-ghost" id="shareBtn">اشتراک‌گذاری</button>
+          <button class="btn btn-download-jump" id="downloadJumpBtn" type="button">⇩ دانلود</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap detail-error-state" id="detailErrorState" hidden>
+  <span class="eyebrow">عنوان پیدا نشد</span>
+  <h1>این فیلم یا سریال در دسترس نیست</h1>
+  <p>ممکن است عنوان حذف شده باشد یا لینک آن قدیمی باشد. از فهرست فیلم‌ها و سریال‌ها یک عنوان دیگر انتخاب کن.</p>
+  <div class="detail-error-actions"><a class="btn btn-primary" href="movies.html">رفتن به فیلم‌ها</a><a class="btn btn-ghost" href="series.html">رفتن به سریال‌ها</a></div>
+</section>
+
+<main class="wrap detail-body">
+  <div class="detail-section">
+    <h3>خلاصه داستان</h3>
+    <p class="detail-synopsis" id="detailSynopsis"><span class="detail-placeholder">در حال بارگذاری اطلاعات عنوان...</span></p>
+  </div>
+
+  <div class="detail-section" id="metaSection">
+    <h3>اطلاعات بیشتر</h3>
+    <div class="meta-grid" id="metaGrid"></div>
+  </div>
+
+  <div class="detail-section" id="downloadSection" style="display:none;">
+    <h3>لینک‌های دانلود</h3>
+    <div class="download-list" id="downloadList"></div>
+  </div>
+
+  <div class="detail-section" id="castSection">
+    <h3>بازیگران</h3>
+    <div class="cast-row" id="castRow"></div>
+  </div>
+
+  <div class="detail-section">
+    <h3>نظرات و امتیاز کاربران</h3>
+    <div id="ratingSummary"></div>
+    <div class="comment-list" id="commentList"></div>
+    <div id="commentFormArea"></div>
+  </div>
+
+  <div class="detail-section">
+    <h3>پرسش و پاسخ</h3>
+    <div class="qna-list" id="qnaList"></div>
+    <div id="questionFormArea"></div>
+  </div>
+
+  <div class="detail-section" id="similarSection">
+    <h3>موارد مشابه</h3>
+    <div class="hscroll" id="similarGrid"></div>
+  </div>
+</main>
+
+<div id="app-footer"></div>
+
+<div id="app-bottomnav"></div>
+
+<script type="module" src="js/movie-detail.js"></script>
+</body>
+</html>

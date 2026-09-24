@@ -1,0 +1,26 @@
+{
+  "name": "نیو مووی",
+  "short_name": "نیو مووی",
+  "description": "معرفی فیلم و سریال با خلاصه داستان، امتیاز و تریلر",
+  "lang": "fa-IR",
+  "dir": "rtl",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "icons": [
+    {
+      "src": "favicon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

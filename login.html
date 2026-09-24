@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ورود / ثبت‌نام | نیو مووی</title>
+<meta name="description" content="ورود یا ثبت‌نام در نیو مووی برای ثبت نظر، امتیاز، پرسش و پاسخ و ذخیره علاقه‌مندی‌ها.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+
+<div class="admin-login-wrap">
+  <div class="admin-card auth-card">
+    <div class="brand" id="loginBrand"></div>
+
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" data-tab="login">ورود</button>
+      <button type="button" class="auth-tab" data-tab="signup">ثبت‌نام</button>
+    </div>
+
+    <form id="loginForm" class="auth-form">
+      <div class="field"><label for="loginEmail">ایمیل</label><input type="email" id="loginEmail" autocomplete="username" required></div>
+      <div class="field"><label for="loginPassword">رمز عبور</label><input type="password" id="loginPassword" autocomplete="current-password" required></div>
+      <button type="submit" class="btn btn-primary" id="loginSubmitBtn" style="width:100%;justify-content:center;">ورود</button>
+      <p class="admin-error" id="loginError"></p>
+    </form>
+
+    <form id="signupForm" class="auth-form" style="display:none;">
+      <div class="field"><label for="signupName">نام</label><input type="text" id="signupName" autocomplete="name" required></div>
+      <div class="field"><label for="signupEmail">ایمیل</label><input type="email" id="signupEmail" autocomplete="username" required></div>
+      <div class="field"><label for="signupPassword">رمز عبور (حداقل ۶ کاراکتر)</label><input type="password" id="signupPassword" autocomplete="new-password" minlength="6" required></div>
+      <button type="submit" class="btn btn-primary" id="signupSubmitBtn" style="width:100%;justify-content:center;">ثبت‌نام</button>
+      <p class="admin-error" id="signupError"></p>
+    </form>
+
+    <div class="auth-divider"><span>یا</span></div>
+
+    <button type="button" class="btn btn-ghost" id="googleBtn" style="width:100%;justify-content:center;">ادامه با حساب گوگل</button>
+    <p class="admin-error" id="googleError"></p>
+  </div>
+</div>
+
+<script type="module" src="./js/login.js"></script>
+</body>
+</html>
