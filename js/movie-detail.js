@@ -46,8 +46,21 @@ function initTrailerModal() {
 function openTrailerModal(embedUrl) {
   const overlay = document.getElementById("trailerModalOverlay");
   const frame = document.getElementById("trailerModalFrame");
-  frame.innerHTML = `<iframe src="${embedUrl}" title="تریلر" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  frame.innerHTML = `
+    <div class="trailer-modal-loading" id="trailerModalLoading">
+      <span class="spinner"></span>
+      <span>در حال بارگذاری تریلر، لطفاً کمی صبر کنید...</span>
+    </div>
+    <iframe id="trailerModalIframe" src="${embedUrl}" title="تریلر" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
   overlay.classList.add("open");
+
+  const iframe = document.getElementById("trailerModalIframe");
+  const loading = document.getElementById("trailerModalLoading");
+  const hideLoading = () => loading?.remove();
+  iframe.addEventListener("load", hideLoading);
+  // اگر رویداد load به هر دلیلی شلیک نشد (بعضی مرورگرها با iframe یوتیوب این‌طورن)،
+  // بعد از ۸ ثانیه هر حالتی، لودینگ را کنار می‌زنیم تا برای همیشه روی صفحه نماند.
+  setTimeout(hideLoading, 8000);
 }
 
 const params = new URLSearchParams(location.search);
