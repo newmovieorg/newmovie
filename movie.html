@@ -41,7 +41,7 @@
         <div class="detail-tags detail-facts" id="detailTags"></div>
         <p class="detail-lead" id="detailLead"></p>
         <div class="detail-actions">
-          <a class="btn btn-ghost" id="trailerLink" href="#" target="_blank" rel="noopener" style="display:none;">▶ تماشای تریلر</a>
+          <button type="button" class="btn btn-ghost" id="trailerLink" style="display:none;"><span id="trailerPlayIcon"></span> تماشای تریلر</button>
           <button class="btn btn-ghost" id="favBtn">افزودن به علاقه‌مندی‌ها</button>
           <button class="btn btn-ghost" id="likeBtn"><span id="likeIcon"></span><span id="likeText">پسندیدن</span> <span id="likeCount">0</span></button>
           <button class="btn btn-ghost" id="shareBtn">اشتراک‌گذاری</button>
@@ -102,6 +102,13 @@
 <div id="app-footer"></div>
 
 <div id="app-bottomnav"></div>
+
+<div class="trailer-modal-overlay" id="trailerModalOverlay">
+  <div class="trailer-modal-box">
+    <button type="button" class="trailer-modal-close" id="trailerModalClose" aria-label="بستن تریلر">×</button>
+    <div class="trailer-modal-frame" id="trailerModalFrame"></div>
+  </div>
+</div>
 
 <script type="module" src="js/movie-detail.js"></script>
 </body>
