@@ -1129,6 +1129,30 @@ body.hero-page .site-header.scrolled {
 .info-card h2 { margin: 0 0 14px; font-size: 1.15rem; }
 .rich-text { white-space: pre-line; color: var(--paper-dim); line-height: 2.1; }
 .rich-text h2 { color: var(--paper); margin-top: 28px; }
+
+/* ================= Ads page ================= */
+.ad-grid { display: grid; gap: 20px; grid-template-columns: 1fr; margin-bottom: 20px; }
+@media (min-width: 768px) { .ad-grid { grid-template-columns: repeat(2, 1fr); } }
+.ad-card { background: linear-gradient(145deg, #181818, #111); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 26px; }
+.ad-card-icon {
+  width: 52px; height: 52px; border-radius: 50%; margin-bottom: 16px;
+  background: rgba(205,250,10,0.1); color: var(--brand);
+  display: flex; align-items: center; justify-content: center;
+}
+.ad-card-icon svg { width: 24px; height: 24px; }
+.ad-card h2 { margin: 0 0 10px; font-size: 1.15rem; }
+.ad-card > p { color: var(--paper-dim); margin: 0 0 16px; line-height: 1.9; }
+.ad-benefits { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.ad-benefits li { display: flex; align-items: flex-start; gap: 8px; color: var(--paper-dim); font-size: 0.92rem; }
+.ad-benefits svg { width: 16px; height: 16px; color: var(--brand); flex-shrink: 0; margin-top: 3px; }
+.ad-usage {
+  display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: var(--paper-dim);
+  background: rgba(255,255,255,0.04); border-radius: var(--r-md); padding: 12px 14px;
+}
+.ad-usage svg { width: 18px; height: 18px; color: var(--brand); flex-shrink: 0; margin-top: 2px; }
+.ad-contact-card { text-align: center; }
+.ad-contact-card .ad-card-icon { margin-inline: auto; }
+.ad-contact-card .btn { margin-top: 6px; }
 .info-highlight {
   margin-top: 26px; padding: 18px; border-radius: var(--r-md);
   border-inline-start: 3px solid var(--brand); background: rgba(205,250,10,.06);
