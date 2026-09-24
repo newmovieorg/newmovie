@@ -1,5 +1,5 @@
 import { watchMovies, watchCategories } from "./data.js";
-import { skeletonCards, movieCardHTML } from "./ui.js";
+import { skeletonCards, movieCardHTML, emptyStateHTML } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 
 renderChrome();
@@ -75,7 +75,7 @@ export function initListPage(pageType) {
     grid.insertAdjacentHTML("beforeend", decorate(chunk).map(movieCardHTML).join(""));
     shown += chunk.length;
     loadMoreBtn.style.display = shown < filtered.length ? "inline-flex" : "none";
-    if (!filtered.length) grid.innerHTML = `<p class="empty-note">چیزی با این فیلتر پیدا نشد.</p>`;
+    if (!filtered.length) grid.innerHTML = emptyStateHTML("چیزی با این فیلتر پیدا نشد", "فیلترها را تغییر بده یا دوباره امتحان کن.");
   }
 
   function tryInit() {
