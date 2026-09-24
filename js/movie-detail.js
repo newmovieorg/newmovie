@@ -1,5 +1,5 @@
 import { watchMovies, watchCategories } from "./data.js";
-import { movieCardHTML, isFavorite, toggleFavorite, isLiked, toggleLike, shareItem, skeletonCards, STAR_FILLED, STAR_OUTLINE, THUMB_FILLED, THUMB_OUTLINE, escapeHTML } from "./ui.js";
+import { movieCardHTML, isFavorite, toggleFavorite, isLiked, toggleLike, shareItem, skeletonCards, STAR_FILLED, STAR_OUTLINE, THUMB_FILLED, THUMB_OUTLINE, PLAY_ICON, escapeHTML } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 import {
   fetchComments, renderRatingSummary, renderComments, mountCommentWidget,
@@ -7,6 +7,48 @@ import {
 } from "./comments.js";
 
 renderChrome();
+initTrailerModal();
+document.getElementById("trailerPlayIcon").innerHTML = PLAY_ICON;
+
+// لینک ذخیره‌شده در m.trailerUrl می‌تواند youtube.com/watch?v=، youtu.be/،
+// embed/ یا shorts/ باشد — همه را به یک آدرس embed قابل‌پخش تبدیل می‌کنیم تا
+// تریلر همین‌جا توی سایت خودمان پخش شود، نه با رفتن به یوتیوب.
+function getYouTubeEmbedUrl(url) {
+  try {
+    const u = new URL(url);
+    let videoId = null;
+    if (u.hostname.includes("youtu.be")) {
+      videoId = u.pathname.slice(1);
+    } else if (u.searchParams.get("v")) {
+      videoId = u.searchParams.get("v");
+    } else {
+      const embedMatch = u.pathname.match(/\/embed\/([^/?]+)/);
+      const shortsMatch = u.pathname.match(/\/shorts\/([^/?]+)/);
+      videoId = (embedMatch && embedMatch[1]) || (shortsMatch && shortsMatch[1]) || null;
+    }
+    if (!videoId) return null;
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+  } catch {
+    return null;
+  }
+}
+
+function initTrailerModal() {
+  const overlay = document.getElementById("trailerModalOverlay");
+  const frame = document.getElementById("trailerModalFrame");
+  const closeBtn = document.getElementById("trailerModalClose");
+  const close = () => { overlay.classList.remove("open"); frame.innerHTML = ""; };
+  closeBtn.addEventListener("click", close);
+  overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+}
+
+function openTrailerModal(embedUrl) {
+  const overlay = document.getElementById("trailerModalOverlay");
+  const frame = document.getElementById("trailerModalFrame");
+  frame.innerHTML = `<iframe src="${embedUrl}" title="تریلر" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  overlay.classList.add("open");
+}
 
 const params = new URLSearchParams(location.search);
 const id = params.get("id");
@@ -159,7 +201,16 @@ function render(m, allMovies, categories) {
   }
 
   const trailerBtn = document.getElementById("trailerLink");
-  if (m.trailerUrl) { trailerBtn.href = m.trailerUrl; trailerBtn.style.display = "inline-flex"; }
+  if (m.trailerUrl) {
+    const embedUrl = getYouTubeEmbedUrl(m.trailerUrl);
+    trailerBtn.style.display = "inline-flex";
+    trailerBtn.onclick = embedUrl
+      ? () => openTrailerModal(embedUrl)
+      : () => window.open(m.trailerUrl, "_blank", "noopener"); // لینک غیریوتیوبی/ناشناخته — باز کردن در تب جدید به‌جای پخش داخلی
+  } else {
+    trailerBtn.style.display = "none";
+    trailerBtn.onclick = null;
+  }
 
   const dlSection = document.getElementById("downloadSection");
   const links = Array.isArray(m.downloadLinks) ? m.downloadLinks.filter(l => l && l.url) : [];
