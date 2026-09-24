@@ -233,6 +233,8 @@ watchVisitor(async (user) => {
 });
 
 
+const NEW_BADGE_DAYS = 7;
+
 export function movieCardHTML(m) {
   const typeLabel = m.type === "series" ? "سریال" : "فیلم";
   const title = escapeHTML(m.title);
@@ -240,12 +242,15 @@ export function movieCardHTML(m) {
   const posterClass = posterUrl ? "card-poster" : "card-poster poster-missing";
   const categoryNames = Array.isArray(m.categoryNames) ? m.categoryNames.filter(Boolean) : [];
   const metaLabel = categoryNames.length ? categoryNames.join("، ") : (m.genre || "");
+  const createdSeconds = m.createdAt?.seconds;
+  const isNew = createdSeconds && (Date.now() / 1000 - createdSeconds) < NEW_BADGE_DAYS * 86400;
   return `
     <a class="card" href="movie.html?id=${m.id}">
       <div class="${posterClass}">
         ${posterUrl ? `<img class="card-poster-img" src="${posterUrl}" alt="${title}" loading="lazy" decoding="async" onerror="this.hidden=true;this.parentElement.classList.add('poster-missing')">` : ""}
         ${m.rating ? `<span class="card-rating">${STAR_FILLED}${m.rating}</span>` : ""}
         <span class="card-type-badge">${typeLabel}</span>
+        ${isNew ? `<span class="card-new-badge">جدید</span>` : ""}
       </div>
       <div class="card-body">
         <p class="card-title">${title}</p>
@@ -253,4 +258,19 @@ export function movieCardHTML(m) {
       </div>
     </a>
   `;
+}
+
+// حالت خالی یکدست برای همه‌ی جاهایی که یک گرید کامل چیزی برای نشان‌دادن ندارد
+// (فیلتر بی‌نتیجه، علاقه‌مندی‌های خالی و...) — به‌جای یک خط متن ساده.
+export function emptyStateHTML(title, subtitle = "") {
+  return `
+    <div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 8v13H3V8"/>
+        <path d="M1 3h22v5H1z"/>
+        <path d="M10 12h4"/>
+      </svg>
+      <p class="empty-state-title">${escapeHTML(title)}</p>
+      ${subtitle ? `<p class="empty-state-sub">${escapeHTML(subtitle)}</p>` : ""}
+    </div>`;
 }
