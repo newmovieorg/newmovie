@@ -11,7 +11,7 @@ import { showToast } from "./ui.js";
 // از Firebase Console → Project settings → Cloud Messaging → Web configuration
 // → Web Push certificates یک جفت کلید VAPID بساز و مقدارش رو همین‌جا جایگزین کن.
 // بدون این کلید، getToken() هیچ‌وقت موفق نمی‌شه.
-const VAPID_KEY = "PASTE_YOUR_FIREBASE_VAPID_KEY_HERE";
+const VAPID_KEY = "BM8WHM4yLJhC2QJTZexqWDhRpQGpb-SBGyRI2_BYMoo9mL9rerRYWr82v_lu-wJsMBjDpEFV9RB3Z3xX0mkJ8Qk";
 
 const REMIND_KEY = "newmovie_notif_remind_at";
 const REMIND_INTERVAL_MS = 3 * 24 * 60 * 60 * 1000; // هر ۳ روز حداکثر یک‌بار
