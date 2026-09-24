@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>پنل مدیریت | نیو مووی</title>
+<meta name="description" content="پنل مدیریت نیو مووی.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="admin-body">
+
+<div class="admin-shell">
+  <div class="admin-topbar">
+    <div class="brand" id="dashBrand"></div>
+    <button class="btn-small" id="logoutBtn">خروج</button>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-tab="overview">نمای کلی</button>
+    <button class="admin-tab" data-tab="content">فیلم‌ها و سریال‌ها</button>
+    <button class="admin-tab" data-tab="heroes">مدیریت هیرو</button>
+    <button class="admin-tab" data-tab="genres">ژانرها</button>
+    <button class="admin-tab" data-tab="feedback">نظرات و سوالات</button>
+    <button class="admin-tab" data-tab="visitors">بازدیدکنندگان</button>
+    <button class="admin-tab" data-tab="settings">تنظیمات سایت</button>
+    <button class="admin-tab" data-tab="notifications">ارسال اعلان</button>
+  </div>
+
+  <!-- Overview -->
+  <div class="admin-view active" id="view-overview">
+    <div class="admin-panel">
+      <h2>خلاصه وضعیت</h2>
+      <div class="meta-grid" id="statsGrid">
+        <div class="meta-item"><span>تعداد فیلم‌ها</span><strong id="statMovies">—</strong></div>
+        <div class="meta-item"><span>تعداد سریال‌ها</span><strong id="statSeries">—</strong></div>
+        <div class="meta-item"><span>هیروهای فعال</span><strong id="statHeroes">—</strong></div>
+        <div class="meta-item"><span>تعداد ژانرها</span><strong id="statGenres">—</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content: movies + series -->
+  <div class="admin-view" id="view-content">
+    <div class="admin-panel">
+      <h2 id="movieFormTitle">افزودن فیلم/سریال جدید</h2>
+      <input type="hidden" id="movieId">
+      <div class="form-row">
+        <div class="field">
+          <label>نوع</label>
+          <select id="mType"><option value="movie">فیلم</option><option value="series">سریال</option></select>
+        </div>
+        <div class="field">
+          <label>وضعیت</label>
+          <select id="mActive"><option value="true">فعال (نمایش در سایت)</option><option value="false">غیرفعال (مخفی)</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>عنوان</label><input type="text" id="mTitle"></div>
+        <div class="field"><label>عنوان اصلی (اختیاری)</label><input type="text" id="mOriginalTitle"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="field">
+          <label>برچسب ژانر قدیمی (اختیاری — گروه‌بندی از دسته‌بندی‌های پایین انجام می‌شود)</label>
+          <input type="text" id="mGenre" placeholder="مثلاً: درام، معمایی">
+        </div>
+        <div class="field"><label>سال</label><input type="text" id="mYear"></div>
+        <div class="field"><label>مدت (دقیقه)</label><input type="text" id="mRuntime"></div>
+      </div>
+      <div class="field">
+        <label>ژانرها (یک یا چند مورد — گروه‌بندی اصلی سایت از این فهرست انجام می‌شود)</label>
+        <div class="chip-row" id="mCategoryPicker"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="field"><label>امتیاز (از ۱۰)</label><input type="text" id="mRating"></div>
+        <div class="field"><label>تعداد رأی (اختیاری)</label><input type="text" id="mVotes"></div>
+        <div class="field"><label>محبوبیت (اختیاری، عدد بزرگتر = بالاتر)</label><input type="text" id="mPopularity"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>کشور</label><input type="text" id="mCountry"></div>
+        <div class="field"><label>زبان</label><input type="text" id="mLanguage"></div>
+      </div>
+      <div class="field"><label>کارگردان</label><input type="text" id="mDirector"></div>
+      <div class="field"><label>بازیگران (با ویرگول جدا کن)</label><input type="text" id="mCast" placeholder="مثلاً: علی نصیریان، ..."></div>
+      <div class="field"><label>خلاصه داستان</label><textarea id="mSynopsis"></textarea></div>
+      <div class="form-row">
+        <div class="field"><label>لینک پوستر</label><input type="text" id="mPoster" placeholder="https://..."></div>
+        <div class="field"><label>لینک بک‌دراپ (تصویر بزرگ صفحه جزئیات، اختیاری)</label><input type="text" id="mBackdrop" placeholder="https://..."></div>
+      </div>
+      <div class="field"><label>لینک تریلر (اختیاری)</label><input type="text" id="mTrailer" placeholder="https://..."></div>
+      <div class="field">
+        <label>لینک‌های دانلود (اختیاری — می‌تونی چند کیفیت/حجم مختلف اضافه کنی)</label>
+        <div id="downloadLinksBox"></div>
+        <button type="button" class="btn-small" id="addDlRowBtn">+ افزودن لینک دانلود</button>
+      </div>
+      <button class="btn btn-primary" id="saveMovieBtn">ذخیره</button>
+      <button class="btn-small" id="cancelEditBtn" style="display:none;">انصراف از ویرایش</button>
+      <p class="status-msg" id="movieStatus"></p>
+    </div>
+
+    <div class="admin-panel">
+      <h2>لیست فیلم‌ها و سریال‌ها</h2>
+      <div class="chip-row">
+        <button class="chip active" data-filter="all">همه</button>
+        <button class="chip" data-filter="movie">فیلم‌ها</button>
+        <button class="chip" data-filter="series">سریال‌ها</button>
+      </div>
+      <div class="admin-list" id="adminMovieList"><p class="empty-note">در حال بارگذاری...</p></div>
+    </div>
+  </div>
+
+  <!-- Heroes -->
+  <div class="admin-view" id="view-heroes">
+    <div class="admin-panel">
+      <h2 id="heroFormTitle">افزودن هیرو جدید</h2>
+      <input type="hidden" id="heroId">
+      <div class="form-row">
+        <div class="field"><label>عنوان کوچک (Kicker)</label><input type="text" id="heroKicker"></div>
+        <div class="field">
+          <label>فیلم/سریال مرتبط (اختیاری)</label>
+          <select id="heroMovieSelect"><option value="">— هیچکدام —</option></select>
+        </div>
+      </div>
+      <div class="field"><label>عنوان اصلی هیرو</label><input type="text" id="heroTitle"></div>
+      <div class="field"><label>توضیح هیرو</label><textarea id="heroDesc"></textarea></div>
+      <div class="form-row-3">
+        <div class="field"><label>سال (اختیاری)</label><input type="text" id="heroYear"></div>
+        <div class="field"><label>ژانر (اختیاری)</label><input type="text" id="heroGenre"></div>
+        <div class="field"><label>ترتیب نمایش</label><input type="text" id="heroOrder" placeholder="0"></div>
+      </div>
+      <div class="field"><label>لینک تصویر پس‌زمینه</label><input type="text" id="heroBackdrop" placeholder="https://..."></div>
+      <div class="field">
+        <label>وضعیت</label>
+        <select id="heroActive"><option value="true">فعال</option><option value="false">غیرفعال</option></select>
+      </div>
+      <button class="btn btn-primary" id="saveHeroBtn">ذخیره هیرو</button>
+      <button class="btn-small" id="cancelHeroEditBtn" style="display:none;">انصراف از ویرایش</button>
+      <p class="status-msg" id="heroStatus"></p>
+    </div>
+
+    <div class="admin-panel">
+      <h2>لیست هیروها (ترتیب نمایش در صفحه اصلی)</h2>
+      <div class="admin-list" id="adminHeroList"><p class="empty-note">در حال بارگذاری...</p></div>
+    </div>
+  </div>
+
+  <!-- Categories (stored in the same "genres" Firestore collection — only the UI label changed) -->
+  <div class="admin-view" id="view-genres">
+    <div class="admin-panel">
+      <h2>افزودن ژانر</h2>
+      <div class="field"><label>نام ژانر</label><input type="text" id="genreName" placeholder="مثلاً: کمدی"></div>
+      <button class="btn btn-primary" id="saveGenreBtn">افزودن</button>
+      <button class="btn-small" id="cancelGenreEditBtn" style="display:none;">انصراف از ویرایش</button>
+      <p class="status-msg" id="genreStatus"></p>
+    </div>
+    <div class="admin-panel">
+      <h2>لیست ژانرها</h2>
+      <p class="empty-note" style="padding:0 0 14px;">هر فیلم/سریال یک یا چند ژانر از همین فهرست انتخاب می‌کند. نام ژانرها را یکدست نگه دار تا فیلترها و بخش‌های صفحه اصلی مرتب بمانند.</p>
+      <div class="admin-list" id="adminGenreList"><p class="empty-note">در حال بارگذاری...</p></div>
+    </div>
+  </div>
+
+  <!-- Feedback: comments moderation + Q&A answers -->
+  <div class="admin-view" id="view-feedback">
+    <div class="admin-panel">
+      <h2>سوالات کاربران</h2>
+      <div class="admin-list" id="adminQnaList"><p class="empty-note">در حال بارگذاری...</p></div>
+    </div>
+    <div class="admin-panel">
+      <h2>نظرات کاربران (مدیریت/حذف)</h2>
+      <div class="admin-list" id="adminCommentsList"><p class="empty-note">در حال بارگذاری...</p></div>
+    </div>
+  </div>
+
+  <!-- Visitors: Google-login accounts + best-effort IP blocklist -->
+  <div class="admin-view" id="view-visitors">
+    <div class="admin-panel">
+      <h2>حساب‌های بازدیدکننده (ورود با گوگل)</h2>
+      <div class="admin-list" id="adminVisitorsList"><p class="empty-note">در حال بارگذاری...</p></div>
+    </div>
+    <div class="admin-panel">
+      <h2>لیست IP های محدودشده</h2>
+      <p class="empty-note" style="padding:0 0 14px;">
+        توجه: این محدودیت فقط سمت مرورگر بازدیدکننده چک می‌شه و IP هرگز توسط سرور تایید نمی‌شه؛
+        یعنی یک کاربر با کمی تغییر در کد کلاینت می‌تونه از کنارش رد بشه. برای مسدودسازی واقعی و
+        قابل‌اتکا، باید حساب کاربری (بالا) بلاک بشه — همون واقعاً در Firestore Rules اجرا می‌شه.
+      </p>
+      <div class="form-row-3" style="margin-bottom:14px;">
+        <input type="text" id="newBlockedIp" placeholder="مثلاً 1.2.3.4">
+        <button class="btn-small" id="addBlockedIpBtn">افزودن به لیست</button>
+      </div>
+      <div class="admin-list" id="adminBlockedIpsList"><p class="empty-note">در حال بارگذاری...</p></div>
+    </div>
+  </div>
+
+  <!-- Editable public pages and contact information -->
+  <div class="admin-view" id="view-settings">
+    <div class="admin-panel">
+      <h2>محتوای عمومی سایت</h2>
+      <div class="form-row">
+        <div class="field"><label>شعار کوتاه سایت</label><input type="text" id="siteTagline"></div>
+        <div class="field"><label>عنوان صفحه درباره ما</label><input type="text" id="siteAboutTitle"></div>
+      </div>
+      <div class="field"><label>متن درباره ما</label><textarea id="siteAboutBody"></textarea></div>
+      <div class="field"><label>ماموریت یا توضیح برجسته</label><textarea id="siteAboutMission"></textarea></div>
+    </div>
+    <div class="admin-panel">
+      <h2>اطلاعات تماس</h2>
+      <div class="form-row">
+        <div class="field"><label>عنوان صفحه تماس</label><input type="text" id="siteContactTitle"></div>
+        <div class="field"><label>توضیح تماس</label><input type="text" id="siteContactBody"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>ایمیل</label><input type="email" id="siteContactEmail"></div>
+        <div class="field"><label>شماره تماس</label><input type="text" id="siteContactPhone"></div>
+      </div>
+      <div class="field"><label>آدرس</label><input type="text" id="siteContactAddress"></div>
+      <div class="form-row">
+        <div class="field"><label>لینک تلگرام</label><input type="url" id="siteTelegramUrl" placeholder="https://t.me/..."></div>
+        <div class="field"><label>لینک اینستاگرام</label><input type="url" id="siteInstagramUrl" placeholder="https://instagram.com/..."></div>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <h2>پرسش‌های متداول</h2>
+      <p class="admin-help">سه پرسش اصلی سایت را از اینجا ویرایش کنید. برای موارد بیشتر بعداً می‌توانیم مدیریت لیستی اضافه کنیم.</p>
+      <div class="faq-admin-row"><div class="field"><label>پرسش ۱</label><input type="text" id="faq1Question"></div><div class="field"><label>پاسخ ۱</label><textarea id="faq1Answer"></textarea></div></div>
+      <div class="faq-admin-row"><div class="field"><label>پرسش ۲</label><input type="text" id="faq2Question"></div><div class="field"><label>پاسخ ۲</label><textarea id="faq2Answer"></textarea></div></div>
+      <div class="faq-admin-row"><div class="field"><label>پرسش ۳</label><input type="text" id="faq3Question"></div><div class="field"><label>پاسخ ۳</label><textarea id="faq3Answer"></textarea></div></div>
+      <button class="btn btn-primary" id="saveSettingsBtn">ذخیره تنظیمات سایت</button>
+      <p class="status-msg" id="settingsStatus"></p>
+    </div>
+  </div>
+
+  <!-- Web push notifications (Firebase Cloud Messaging) -->
+  <div class="admin-view" id="view-notifications">
+    <div class="admin-panel">
+      <h2>ارسال اعلان به همه کاربران</h2>
+      <p class="admin-help">این اعلان برای همه‌ی کاربرانی که در مرورگرشان روی «فعال‌سازی اعلان» زده‌اند ارسال می‌شود — حتی وقتی سایت را باز ندارند.</p>
+      <div class="field"><label>عنوان اعلان</label><input type="text" id="notifTitle" maxlength="80" placeholder="مثلاً: فیلم جدید اضافه شد"></div>
+      <div class="field"><label>متن اعلان</label><textarea id="notifBody" maxlength="200" placeholder="توضیح کوتاه اعلان..."></textarea></div>
+      <div class="field"><label>لینک (اختیاری)</label><input type="text" id="notifLink" placeholder="مثلاً: movie.html?id=xxxxxxxx"></div>
+      <button class="btn btn-primary" id="notifSendBtn">ارسال برای همه</button>
+      <p class="status-msg" id="notifStatus"></p>
+      <p class="admin-help" id="notifTokenCount"></p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { LOGO_SVG } from "../js/chrome.js";
+  document.getElementById("dashBrand").innerHTML = LOGO_SVG + `<span class="brand-text">پنل نیو<span class="accent">مووی</span></span>`;
+</script>
+<script type="module" src="admin.js"></script>
+</body>
+</html>
