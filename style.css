@@ -615,11 +615,18 @@ body.page-loading .detail-body { visibility: hidden; }
   overflow: hidden; overflow-wrap: anywhere; min-height: 2.8em;
 }
 .card-meta {
-  color: var(--paper-dim); font-size: 0.74rem; line-height: 1.7;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  min-height: 1.7em;
-}
+  color: var(--paper-dim);
+  font-size: .74rem;
+  line-height: 1.5;
+  max-height: 2.8em;
+  overflow: hidden;
 
+  /* اینجا اضافه کن */
+  background: rgba(0, 0, 0, 0.35);
+  padding: 5px 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
 .empty-note, .error-note { color: var(--paper-faint); font-size: 0.95rem; padding: 36px 0; text-align: center; }
 .error-note { color: #ff6b6b; }
 
