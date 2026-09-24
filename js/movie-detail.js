@@ -1,5 +1,5 @@
 import { watchMovies, watchCategories } from "./data.js";
-import { movieCardHTML, isFavorite, toggleFavorite, isLiked, toggleLike, shareItem, skeletonCards, STAR_FILLED, STAR_OUTLINE, escapeHTML } from "./ui.js";
+import { movieCardHTML, isFavorite, toggleFavorite, isLiked, toggleLike, shareItem, skeletonCards, STAR_FILLED, STAR_OUTLINE, THUMB_FILLED, THUMB_OUTLINE, escapeHTML } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 import {
   fetchComments, renderRatingSummary, renderComments, mountCommentWidget,
@@ -66,11 +66,15 @@ function renderFavoriteBtn(m) {
 
 function renderLikeBtn(m) {
   const btn = document.getElementById("likeBtn");
+  const iconEl = document.getElementById("likeIcon");
+  const textEl = document.getElementById("likeText");
   const countEl = document.getElementById("likeCount");
   let count = Math.max(0, m.likesCount || 0);
   const sync = () => {
     const active = isLiked(m.id);
     btn.classList.toggle("liked", active);
+    iconEl.innerHTML = active ? THUMB_FILLED : THUMB_OUTLINE;
+    textEl.textContent = active ? "ناپسندیدن" : "پسندیدن";
     countEl.textContent = String(count);
   };
   sync();
