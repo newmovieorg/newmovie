@@ -1,4 +1,4 @@
-import { watchMovies, watchCategories } from "./data.js";
+import { watchMovies, watchCategories, watchActors } from "./data.js";
 import { movieCardHTML, isFavorite, toggleFavorite, isLiked, toggleLike, shareItem, skeletonCards, STAR_FILLED, STAR_OUTLINE, THUMB_FILLED, THUMB_OUTLINE, PLAY_ICON, escapeHTML } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 import {
@@ -156,7 +156,7 @@ function renderLikeBtn(m) {
   };
 }
 
-function render(m, allMovies, categories) {
+function render(m, allMovies, categories, actors) {
   document.getElementById("detailHero").hidden = false;
   document.querySelector(".detail-body").hidden = false;
   document.getElementById("detailErrorState").hidden = true;
@@ -193,7 +193,9 @@ function render(m, allMovies, categories) {
   if (m.rating) tags.push({ html: `${STAR_FILLED}${escapeHTML(String(m.rating))}${m.votes ? ` (${escapeHTML(String(m.votes))} رأی)` : ""}`, isRating: true });
   if (m.year) tags.push({ html: escapeHTML(String(m.year)) });
   if (m.runtime) tags.push({ html: escapeHTML(`${m.runtime} دقیقه`) });
-  document.getElementById("detailTags").innerHTML = tags.map(t => `<span class="${t.isRating ? "tag-rating" : ""}">${t.html}</span>`).join("");
+  document.getElementById("detailTags").innerHTML =
+    (m.rating ? `<span class="imdb-badge">IMDb</span>` : "") +
+    tags.map(t => `<span class="${t.isRating ? "tag-rating" : ""}">${t.html}</span>`).join("");
   const genres = catNames.length
     ? catNames
     : (m.genre ? String(m.genre).split(/[،,]/).map(item => item.trim()).filter(Boolean) : []);
@@ -220,9 +222,22 @@ function render(m, allMovies, categories) {
   document.getElementById("metaSection").style.display = meta.length ? "" : "none";
 
   const castSection = document.getElementById("castSection");
-  if (m.cast) {
+  const castIds = Array.isArray(m.castIds) ? m.castIds : [];
+  if (castIds.length) {
+    const castRow = castIds
+      .map(aid => actors.find(a => a.id === aid))
+      .filter(Boolean)
+      .map(a => `
+        <a class="cast-chip" href="actor.html?id=${a.id}">
+          <span class="cast-chip-photo">${a.photoUrl ? `<img src="${escapeHTML(a.photoUrl)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>
+          <span>${escapeHTML(a.name || "")}</span>
+        </a>`).join("");
+    document.getElementById("castRow").innerHTML = castRow;
+    castSection.style.display = castRow ? "" : "none";
+  } else if (m.cast) {
+    // فیلم‌های قدیمی‌تر که فقط رشته‌ی متنی کست دارن (بدون عکس/لینک) — سازگاری با گذشته
     const names = m.cast.split(",").map(s => s.trim()).filter(Boolean);
-    document.getElementById("castRow").innerHTML = names.map(n => `<span class="cast-chip">${escapeHTML(n)}</span>`).join("");
+    document.getElementById("castRow").innerHTML = names.map(n => `<span class="cast-chip"><span>${escapeHTML(n)}</span></span>`).join("");
     castSection.style.display = "";
   } else {
     castSection.style.display = "none";
@@ -327,13 +342,13 @@ async function init() {
 
   document.getElementById("similarGrid").innerHTML = skeletonCards(6);
 
-  const state = { movies: null, categories: null };
+  const state = { movies: null, categories: null, actors: null };
   let reviewsStarted = false;
   let notFoundShown = false;
 
   function tryRender() {
-    const { movies, categories } = state;
-    if (movies === null || categories === null) return;
+    const { movies, categories, actors } = state;
+    if (movies === null || categories === null || actors === null) return;
 
     const m = movies.find(x => x.id === id);
     if (!m) {
@@ -345,7 +360,7 @@ async function init() {
     }
     notFoundShown = false;
 
-    render(m, movies, categories);
+    render(m, movies, categories, actors);
     revealDetailPage();
     if (!reviewsStarted) {
       reviewsStarted = true;
@@ -361,6 +376,10 @@ async function init() {
   watchCategories(
     categories => { state.categories = categories; tryRender(); },
     () => { state.categories = []; tryRender(); }
+  );
+  watchActors(
+    actors => { state.actors = actors; tryRender(); },
+    () => { state.actors = []; tryRender(); }
   );
 }
 
