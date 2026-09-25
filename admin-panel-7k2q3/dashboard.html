@@ -178,13 +178,14 @@
         <div class="field"><label>نام بازیگر</label><input type="text" id="actorName" placeholder="مثلاً: علی نصیریان"></div>
         <div class="field"><label>لینک عکس (دایره‌ای نمایش داده می‌شود)</label><input type="text" id="actorPhoto" placeholder="https://..."></div>
       </div>
+      <label class="actor-featured-toggle"><input type="checkbox" id="actorFeatured"><span>نمایش در صفحه اصلی (بازیگر ویژه)</span></label>
       <button class="btn btn-primary" id="saveActorBtn">افزودن بازیگر</button>
       <button class="btn-small" id="cancelActorEditBtn" style="display:none;">انصراف از ویرایش</button>
       <p class="status-msg" id="actorStatus"></p>
     </div>
     <div class="admin-panel">
       <h2>لیست بازیگران</h2>
-      <p class="empty-note" style="padding:0 0 14px;">این‌ها همون بازیگرهایی هستن که موقع افزودن/ویرایش فیلم، از بخش «بازیگران» قابل انتخابن.</p>
+      <p class="empty-note" style="padding:0 0 14px;">این‌ها همون بازیگرهایی هستن که موقع افزودن/ویرایش فیلم، از بخش «بازیگران» قابل انتخابن. فقط بازیگرهایی که تیک «نمایش در صفحه اصلی» رو دارن، توی صفحه اصلی سایت هم نشون داده می‌شن.</p>
       <div class="admin-list" id="adminActorList"><p class="empty-note">در حال بارگذاری...</p></div>
     </div>
   </div>
