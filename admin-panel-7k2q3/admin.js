@@ -313,7 +313,7 @@ async function loadActors() {
     ? allActorsCache.map(a => `
       <div class="admin-list-item" data-id="${a.id}">
         <img class="admin-actor-thumb" src="${a.photoUrl || ""}" alt="" onerror="this.style.visibility='hidden'">
-        <div class="info"><strong>${a.name || "(بدون نام)"}</strong></div>
+        <div class="info"><strong>${a.name || "(بدون نام)"}</strong>${a.featured ? ` <span class="badge-featured">ویژه · صفحه اصلی</span>` : ""}</div>
         <div class="actions"><button class="btn-small edit-actor-btn">ویرایش</button><button class="btn-small danger delete-actor-btn">حذف</button></div>
       </div>`).join("")
     : `<p class="empty-note">هنوز بازیگری اضافه نشده.</p>`;
@@ -342,6 +342,7 @@ async function loadActors() {
       editingActorId = actor.id;
       document.getElementById("actorName").value = actor.name || "";
       document.getElementById("actorPhoto").value = actor.photoUrl || "";
+      document.getElementById("actorFeatured").checked = Boolean(actor.featured);
       document.getElementById("saveActorBtn").textContent = "ذخیره تغییرات";
       document.getElementById("cancelActorEditBtn").style.display = "inline-flex";
       document.getElementById("actorName").focus();
@@ -390,14 +391,15 @@ async function saveActor() {
   const name = document.getElementById("actorName").value.trim();
   if (!name) { setStatus("actorStatus", "نام بازیگر را وارد کن.", false); return; }
   const photoUrl = document.getElementById("actorPhoto").value.trim();
+  const featured = document.getElementById("actorFeatured").checked;
   const btn = document.getElementById("saveActorBtn");
   setButtonLoading(btn, true);
   try {
     if (editingActorId) {
-      await updateDoc(doc(db, "actors", editingActorId), { name, photoUrl });
+      await updateDoc(doc(db, "actors", editingActorId), { name, photoUrl, featured });
       setStatus("actorStatus", "بازیگر ویرایش شد.");
     } else {
-      await addDoc(collection(db, "actors"), { name, photoUrl, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "actors"), { name, photoUrl, featured, createdAt: serverTimestamp() });
       setStatus("actorStatus", "بازیگر اضافه شد.");
     }
     resetActorForm();
@@ -413,9 +415,11 @@ function resetActorForm() {
   editingActorId = null;
   const nameInput = document.getElementById("actorName");
   const photoInput = document.getElementById("actorPhoto");
+  const featuredInput = document.getElementById("actorFeatured");
   const button = document.getElementById("saveActorBtn");
   if (nameInput) nameInput.value = "";
   if (photoInput) photoInput.value = "";
+  if (featuredInput) featuredInput.checked = false;
   if (button) button.textContent = "افزودن بازیگر";
   const cancel = document.getElementById("cancelActorEditBtn");
   if (cancel) cancel.style.display = "none";
