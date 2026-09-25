@@ -38,3 +38,11 @@ export function watchCategories(onData, onError) {
     onData(categories);
   }, onError);
 }
+
+export function watchActors(onData, onError) {
+  return onSnapshot(collection(db, "actors"), snap => {
+    const actors = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", "fa"));
+    onData(actors);
+  }, onError);
+}
