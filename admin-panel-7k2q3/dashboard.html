@@ -25,6 +25,7 @@
     <button class="admin-tab" data-tab="content">فیلم‌ها و سریال‌ها</button>
     <button class="admin-tab" data-tab="heroes">مدیریت هیرو</button>
     <button class="admin-tab" data-tab="genres">ژانرها</button>
+    <button class="admin-tab" data-tab="actors">بازیگران</button>
     <button class="admin-tab" data-tab="feedback">نظرات و سوالات</button>
     <button class="admin-tab" data-tab="visitors">بازدیدکنندگان</button>
     <button class="admin-tab" data-tab="settings">تنظیمات سایت</button>
@@ -85,7 +86,11 @@
         <div class="field"><label>زبان</label><input type="text" id="mLanguage"></div>
       </div>
       <div class="field"><label>کارگردان</label><input type="text" id="mDirector"></div>
-      <div class="field"><label>بازیگران (با ویرگول جدا کن)</label><input type="text" id="mCast" placeholder="مثلاً: علی نصیریان، ..."></div>
+      <div class="field">
+        <label>بازیگران (اول از تب «بازیگران» اضافه‌شون کن، بعد اینجا انتخابشون کن)</label>
+        <input type="text" id="mCastSearch" placeholder="جستجوی نام بازیگر...">
+        <div class="chip-row cast-picker" id="mCastPicker"></div>
+      </div>
       <div class="field"><label>خلاصه داستان</label><textarea id="mSynopsis"></textarea></div>
       <div class="form-row">
         <div class="field"><label>لینک پوستر</label><input type="text" id="mPoster" placeholder="https://..."></div>
@@ -161,6 +166,26 @@
       <h2>لیست ژانرها</h2>
       <p class="empty-note" style="padding:0 0 14px;">هر فیلم/سریال یک یا چند ژانر از همین فهرست انتخاب می‌کند. نام ژانرها را یکدست نگه دار تا فیلترها و بخش‌های صفحه اصلی مرتب بمانند.</p>
       <div class="admin-list" id="adminGenreList"><p class="empty-note">در حال بارگذاری...</p></div>
+    </div>
+  </div>
+
+  <!-- Actors: managed separately so the same actor can be reused across many movies/series -->
+  <div class="admin-view" id="view-actors">
+    <div class="admin-panel">
+      <h2 id="actorFormTitle">افزودن بازیگر</h2>
+      <input type="hidden" id="actorId">
+      <div class="form-row">
+        <div class="field"><label>نام بازیگر</label><input type="text" id="actorName" placeholder="مثلاً: علی نصیریان"></div>
+        <div class="field"><label>لینک عکس (دایره‌ای نمایش داده می‌شود)</label><input type="text" id="actorPhoto" placeholder="https://..."></div>
+      </div>
+      <button class="btn btn-primary" id="saveActorBtn">افزودن بازیگر</button>
+      <button class="btn-small" id="cancelActorEditBtn" style="display:none;">انصراف از ویرایش</button>
+      <p class="status-msg" id="actorStatus"></p>
+    </div>
+    <div class="admin-panel">
+      <h2>لیست بازیگران</h2>
+      <p class="empty-note" style="padding:0 0 14px;">این‌ها همون بازیگرهایی هستن که موقع افزودن/ویرایش فیلم، از بخش «بازیگران» قابل انتخابن.</p>
+      <div class="admin-list" id="adminActorList"><p class="empty-note">در حال بارگذاری...</p></div>
     </div>
   </div>
 
