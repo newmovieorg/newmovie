@@ -134,9 +134,13 @@ function showError() {
 function renderActorsSection(actors) {
   const section = document.getElementById("sec-actors");
   const row = document.getElementById("actorsRow");
-  if (!actors.length) { section.style.display = "none"; return; }
+  // فقط بازیگرهایی که خودِ ادمین با تیک «نمایش در صفحه اصلی» انتخابشون کرده،
+  // نه هر بازیگری که فقط برای کست یک فیلم اضافه شده — وگرنه با اضافه‌شدن
+  // فیلم‌های بیشتر، این ردیف بی‌نهایت بزرگ می‌شد.
+  const featured = actors.filter(a => a.featured).slice(0, 20);
+  if (!featured.length) { section.style.display = "none"; return; }
   section.style.display = "";
-  row.innerHTML = actors.map(a => `
+  row.innerHTML = featured.map(a => `
     <a class="actor-card" href="actor.html?id=${a.id}">
       <span class="actor-card-photo">${a.photoUrl ? `<img src="${escapeHTML(a.photoUrl)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>
       <span class="actor-card-name">${escapeHTML(a.name || "")}</span>
