@@ -1,4 +1,4 @@
-import { watchMovies, watchHeroes, watchCategories } from "./data.js";
+import { watchMovies, watchHeroes, watchCategories, watchActors } from "./data.js";
 import { skeletonCards, movieCardHTML, escapeHTML } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 
@@ -131,6 +131,19 @@ function showError() {
   document.getElementById("heroCarousel").innerHTML = `<div class="wrap"><p class="error-note">خطا در اتصال به دیتابیس.</p></div>`;
 }
 
+function renderActorsSection(actors) {
+  const section = document.getElementById("sec-actors");
+  const row = document.getElementById("actorsRow");
+  if (!actors.length) { section.style.display = "none"; return; }
+  section.style.display = "";
+  row.innerHTML = actors.map(a => `
+    <a class="actor-card" href="actor.html?id=${a.id}">
+      <span class="actor-card-photo">${a.photoUrl ? `<img src="${escapeHTML(a.photoUrl)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>
+      <span class="actor-card-name">${escapeHTML(a.name || "")}</span>
+    </a>`).join("");
+}
+
 watchMovies(movies => { state.movies = movies; renderSections(); }, showError);
 watchHeroes(heroes => renderHero(heroes), showError);
 watchCategories(categories => { state.categories = categories; renderSections(); }, showError);
+watchActors(renderActorsSection, () => renderActorsSection([]));
