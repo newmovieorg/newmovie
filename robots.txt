@@ -4,4 +4,4 @@ Disallow: /admin-panel-7k2q3/
 Disallow: /favorites.html
 Disallow: /login.html
 
-Sitemap: sitemap.xml
+Sitemap: https://newmovieorg.github.io/newmovie/sitemap.xml
