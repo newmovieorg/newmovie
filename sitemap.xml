@@ -1,19 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Sitemap for NewMovie -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://newmovieorg.github.io/newmovie/index.html</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/movies.html</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/series.html</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/movie.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/favorites.html</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/login.html</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/about.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/contact.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/faq.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/privacy.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/terms.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/403.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/404.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/500.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
-  <url><loc>https://newmovieorg.github.io/newmovie/503.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/</loc>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/movies.html</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/series.html</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/movie.html</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/about.html</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.4</priority>
+    </url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/contact.html</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.4</priority>
+    </url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/faq.html</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/privacy.html</loc>
+        <changefreq>yearly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://newmovieorg.github.io/newmovie/terms.html</loc>
+        <changefreq>yearly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
 </urlset>
