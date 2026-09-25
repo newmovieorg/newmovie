@@ -105,9 +105,11 @@ function setStatus(elId, msg, ok = true) {
 let editingMovieId = null;
 let editingHeroId = null;
 let editingGenreId = null;
+let editingActorId = null;
 let contentFilter = "all";
 let allMoviesCache = [];
 let allGenresCache = [];
+let allActorsCache = [];
 
 async function initDashboard() {
   // Second, independent check (defense in depth against any race between
@@ -139,7 +141,7 @@ async function initDashboard() {
   });
 
   const loaders = [
-    ["ژانرها", loadGenres], ["فیلم‌ها", loadMovies], ["هیروها", loadHeroes],
+    ["ژانرها", loadGenres], ["بازیگران", loadActors], ["فیلم‌ها", loadMovies], ["هیروها", loadHeroes],
     ["نظرات/سوالات", loadFeedback], ["بازدیدکنندگان", loadVisitors], ["IPهای مسدود", loadBlockedIps],
     ["تنظیمات سایت", loadSiteSettings],
   ];
@@ -159,6 +161,9 @@ async function initDashboard() {
   document.getElementById("cancelHeroEditBtn").addEventListener("click", resetHeroForm);
   document.getElementById("saveGenreBtn").addEventListener("click", saveGenre);
   document.getElementById("cancelGenreEditBtn").addEventListener("click", resetGenreForm);
+  document.getElementById("saveActorBtn").addEventListener("click", saveActor);
+  document.getElementById("cancelActorEditBtn").addEventListener("click", resetActorForm);
+  document.getElementById("mCastSearch").addEventListener("input", () => renderCastPicker(getSelectedCastIds()));
   document.getElementById("saveSettingsBtn").addEventListener("click", saveSiteSettings);
   document.getElementById("notifSendBtn").addEventListener("click", sendNotificationToAllUsers);
   refreshTokenCount();
@@ -290,6 +295,129 @@ function resetGenreForm() {
   if (input) input.value = "";
   if (button) button.textContent = "افزودن";
   const cancel = document.getElementById("cancelGenreEditBtn");
+  if (cancel) cancel.style.display = "none";
+}
+
+// ---------- Actors ----------
+// یک مجموعه‌ی جدا (actors) که هم توی فرم فیلم برای انتخاب کست استفاده می‌شه، هم
+// توی صفحه‌ی اصلی سایت و صفحه‌ی اختصاصی هر بازیگر (actor.html).
+
+async function loadActors() {
+  const snap = await getDocs(collection(db, "actors"));
+  allActorsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (a.name || "").localeCompare(b.name || "", "fa"));
+  renderCastPicker(getSelectedCastIds());
+
+  const listBox = document.getElementById("adminActorList");
+  listBox.innerHTML = allActorsCache.length
+    ? allActorsCache.map(a => `
+      <div class="admin-list-item" data-id="${a.id}">
+        <img class="admin-actor-thumb" src="${a.photoUrl || ""}" alt="" onerror="this.style.visibility='hidden'">
+        <div class="info"><strong>${a.name || "(بدون نام)"}</strong></div>
+        <div class="actions"><button class="btn-small edit-actor-btn">ویرایش</button><button class="btn-small danger delete-actor-btn">حذف</button></div>
+      </div>`).join("")
+    : `<p class="empty-note">هنوز بازیگری اضافه نشده.</p>`;
+
+  listBox.querySelectorAll(".delete-actor-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.closest(".admin-list-item").dataset.id;
+      if (await confirmModal("این بازیگر حذف شود؟ (از فیلم‌هایی که بهش اختصاص داده شده هم برداشته می‌شه)", "حذف کن", "انصراف")) {
+        setButtonLoading(btn, true);
+        try {
+          await deleteDoc(doc(db, "actors", id));
+          showToast("بازیگر حذف شد");
+          await loadActors();
+        } catch {
+          showToast("خطا در حذف", "err");
+          setButtonLoading(btn, false);
+        }
+      }
+    });
+  });
+  listBox.querySelectorAll(".edit-actor-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.closest(".admin-list-item").dataset.id;
+      const actor = allActorsCache.find(item => item.id === id);
+      if (!actor) return;
+      editingActorId = actor.id;
+      document.getElementById("actorName").value = actor.name || "";
+      document.getElementById("actorPhoto").value = actor.photoUrl || "";
+      document.getElementById("saveActorBtn").textContent = "ذخیره تغییرات";
+      document.getElementById("cancelActorEditBtn").style.display = "inline-flex";
+      document.getElementById("actorName").focus();
+    });
+  });
+}
+
+// انتخاب کست فیلم: چک‌باکس‌های تصویردار، قابل فیلتر با جستجو — همون الگوی
+// renderCategoryPicker ولی با عکس دایره‌ای و یک فیلد جستجو بالاش.
+function renderCastPicker(previouslySelectedIds) {
+  const box = document.getElementById("mCastPicker");
+  if (!box) return;
+  const selected = new Set(previouslySelectedIds || []);
+  const term = (document.getElementById("mCastSearch")?.value || "").trim().toLocaleLowerCase("fa");
+  const list = term ? allActorsCache.filter(a => (a.name || "").toLocaleLowerCase("fa").includes(term)) : allActorsCache;
+
+  box.innerHTML = list.length
+    ? list.map(a => `
+      <label class="chip category-chip cast-chip-picker">
+        <input type="checkbox" value="${a.id}" ${selected.has(a.id) ? "checked" : ""} style="display:none;">
+        <img src="${a.photoUrl || ""}" alt="" onerror="this.style.visibility='hidden'">
+        ${a.name || "(بدون نام)"}
+      </label>`).join("")
+    : `<p class="empty-note" style="padding:0;">${allActorsCache.length ? "چیزی با این جستجو پیدا نشد." : "اول از تب «بازیگران» چندتا بازیگر اضافه کن."}</p>`;
+
+  box.querySelectorAll(".category-chip").forEach(chip => {
+    const input = chip.querySelector("input");
+    chip.classList.toggle("active", input.checked);
+    chip.addEventListener("click", (e) => {
+      e.preventDefault();
+      input.checked = !input.checked;
+      chip.classList.toggle("active", input.checked);
+    });
+  });
+}
+
+function getSelectedCastIds() {
+  return [...document.querySelectorAll('#mCastPicker input[type="checkbox"]:checked')].map(el => el.value);
+}
+
+function setSelectedCastIds(ids) {
+  renderCastPicker(ids);
+}
+
+async function saveActor() {
+  const name = document.getElementById("actorName").value.trim();
+  if (!name) { setStatus("actorStatus", "نام بازیگر را وارد کن.", false); return; }
+  const photoUrl = document.getElementById("actorPhoto").value.trim();
+  const btn = document.getElementById("saveActorBtn");
+  setButtonLoading(btn, true);
+  try {
+    if (editingActorId) {
+      await updateDoc(doc(db, "actors", editingActorId), { name, photoUrl });
+      setStatus("actorStatus", "بازیگر ویرایش شد.");
+    } else {
+      await addDoc(collection(db, "actors"), { name, photoUrl, createdAt: serverTimestamp() });
+      setStatus("actorStatus", "بازیگر اضافه شد.");
+    }
+    resetActorForm();
+    await loadActors();
+  } catch {
+    setStatus("actorStatus", "خطا در ذخیره‌سازی.", false);
+  } finally {
+    setButtonLoading(btn, false);
+  }
+}
+
+function resetActorForm() {
+  editingActorId = null;
+  const nameInput = document.getElementById("actorName");
+  const photoInput = document.getElementById("actorPhoto");
+  const button = document.getElementById("saveActorBtn");
+  if (nameInput) nameInput.value = "";
+  if (photoInput) photoInput.value = "";
+  if (button) button.textContent = "افزودن بازیگر";
+  const cancel = document.getElementById("cancelActorEditBtn");
   if (cancel) cancel.style.display = "none";
 }
 
@@ -541,7 +669,7 @@ function fillMovieForm(m) {
   document.getElementById("mCountry").value = m.country || "";
   document.getElementById("mLanguage").value = m.language || "";
   document.getElementById("mDirector").value = m.director || "";
-  document.getElementById("mCast").value = m.cast || "";
+  setSelectedCastIds(m.castIds);
   document.getElementById("mSynopsis").value = m.synopsis || "";
   document.getElementById("mPoster").value = m.posterUrl || "";
   document.getElementById("mBackdrop").value = m.backdropUrl || "";
@@ -555,11 +683,13 @@ function resetMovieForm() {
   editingMovieId = null;
   document.getElementById("movieFormTitle").textContent = "افزودن فیلم/سریال جدید";
   ["mOriginalTitle","mTitle","mGenre","mYear","mRuntime","mRating","mVotes","mPopularity",
-   "mCountry","mLanguage","mDirector","mCast","mSynopsis","mPoster","mBackdrop","mTrailer"]
+   "mCountry","mLanguage","mDirector","mSynopsis","mPoster","mBackdrop","mTrailer"]
     .forEach(id => document.getElementById(id).value = "");
   document.getElementById("mType").value = "movie";
   document.getElementById("mActive").value = "true";
+  document.getElementById("mCastSearch").value = "";
   setSelectedCategoryIds([]);
+  setSelectedCastIds([]);
   setDlRows([]);
   document.getElementById("cancelEditBtn").style.display = "none";
 }
@@ -590,7 +720,7 @@ async function saveMovie() {
     country: document.getElementById("mCountry").value.trim(),
     language: document.getElementById("mLanguage").value.trim(),
     director: document.getElementById("mDirector").value.trim(),
-    cast: document.getElementById("mCast").value.trim(),
+    castIds: getSelectedCastIds(),
     synopsis: document.getElementById("mSynopsis").value.trim(),
     posterUrl: document.getElementById("mPoster").value.trim(),
     backdropUrl: document.getElementById("mBackdrop").value.trim(),
