@@ -4,7 +4,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
   collection, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-  serverTimestamp, orderBy, query, collectionGroup, getCountFromServer, where, limit, Timestamp
+  serverTimestamp, orderBy, query, collectionGroup, getCountFromServer, limit
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import {
   getFunctions, httpsCallable
@@ -670,44 +670,32 @@ function renderBarChart(canvasId, labels, data, label, color) {
 
 async function loadAnalytics() {
   const days = lastNDaysLabels(14);
-  const since = new Date();
-  since.setDate(since.getDate() - 14);
-  const sinceTs = Timestamp.fromDate(since);
 
-  let pageViews = [];
-  try {
-    const snap = await getDocs(query(collection(db, "pageViews"), where("createdAt", ">=", sinceTs), orderBy("createdAt", "desc"), limit(3000)));
-    pageViews = snap.docs.map(d => d.data());
-  } catch (e) { console.error("خطا در بارگذاری بازدیدها:", e); }
+  // هر روز فقط یک سند کوچیک (شمارنده) می‌خونیم — ۱۴ خواندن ثابت، صرف‌نظر از
+  // اینکه سایت چقدر ترافیک داشته باشه یا این تب چندبار باز بشه.
+  const [visitDocs, downloadDocs] = await Promise.all([
+    Promise.all(days.map(d => getDoc(doc(db, "visitStats", dayKey(d))).catch(() => null))),
+    Promise.all(days.map(d => getDoc(doc(db, "downloadStats", dayKey(d))).catch(() => null))),
+  ]);
+  const visitCounts = days.map((d, i) => visitDocs[i]?.exists() ? (visitDocs[i].data().count || 0) : 0);
+  const downloadCounts = days.map((d, i) => downloadDocs[i]?.exists() ? (downloadDocs[i].data().count || 0) : 0);
 
-  const visitCounts = {};
-  days.forEach(d => visitCounts[dayKey(d)] = 0);
-  pageViews.forEach(pv => {
-    const key = pv.createdAt?.toDate ? dayKey(pv.createdAt.toDate()) : null;
-    if (key && key in visitCounts) visitCounts[key]++;
-  });
-  renderLineChart("chartVisits", days.map(formatDayLabel), days.map(d => visitCounts[dayKey(d)]), "بازدید", "#cdfa0a");
-
-  let downloads = [];
-  try {
-    const snap = await getDocs(query(collection(db, "downloads"), where("createdAt", ">=", sinceTs), orderBy("createdAt", "desc"), limit(3000)));
-    downloads = snap.docs.map(d => d.data());
-  } catch (e) { console.error("خطا در بارگذاری دانلودها:", e); }
-
-  const dlCounts = {};
-  days.forEach(d => dlCounts[dayKey(d)] = 0);
-  downloads.forEach(dl => {
-    const key = dl.createdAt?.toDate ? dayKey(dl.createdAt.toDate()) : null;
-    if (key && key in dlCounts) dlCounts[key]++;
-  });
-  renderLineChart("chartDownloads", days.map(formatDayLabel), days.map(d => dlCounts[dayKey(d)]), "دانلود", "#4dc9ff");
+  renderLineChart("chartVisits", days.map(formatDayLabel), visitCounts, "بازدید", "#cdfa0a");
+  renderLineChart("chartDownloads", days.map(formatDayLabel), downloadCounts, "دانلود", "#4dc9ff");
 
   const top = [...allMoviesCache].filter(m => m.downloadsCount > 0)
     .sort((a, b) => (b.downloadsCount || 0) - (a.downloadsCount || 0)).slice(0, 8);
   renderBarChart("chartTopDownloads", top.map(m => m.title || "بدون‌نام"), top.map(m => m.downloadsCount || 0), "دانلود", "#ff8a4d");
 
+  // فهرست بازدیدکنندگان اخیر: یک limit ثابت و بدون فیلتر تاریخ — هرقدر هم لاگ
+  // بزرگ بشه، همیشه دقیقاً همین تعداد خونده می‌شه، نه بیشتر.
   const listBox = document.getElementById("adminVisitsList");
-  const recent = pageViews.slice(0, 60);
+  let recent = [];
+  try {
+    const snap = await getDocs(query(collection(db, "pageViews"), orderBy("createdAt", "desc"), limit(60)));
+    recent = snap.docs.map(d => d.data());
+  } catch (e) { console.error("خطا در بارگذاری بازدیدکنندگان:", e); }
+
   listBox.innerHTML = recent.length
     ? recent.map(pv => `
       <div class="admin-list-item visit-row">
