@@ -4,6 +4,7 @@ import { visitorSignOut, watchVisitor } from "./auth.js";
 import { watchCategories } from "./data.js";
 import { confirmDialog } from "./ui.js";
 import { enablePushNotifications, initForegroundMessages, initNotificationReminder } from "./notifications.js";
+import { trackPageView } from "./analytics.js";
 const LOGO_SVG = `<svg class="logo-mark" width="640" height="640" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg">
 <rect x="0" y="0" width="640" height="640" fill="#000000"/>
 <path d="M 146.0,533.3 L 146.3,538.7 L 162.3,538.3 L 161.0,533.0 Z M 234.0,521.3 L 247.7,550.3 L 256.7,550.3 L 258.3,532.3 L 259.7,533.0 L 267.3,550.3 L 276.3,550.3 L 278.3,521.0 L 270.7,521.7 L 270.3,541.7 L 260.7,521.3 L 252.3,521.3 L 250.7,541.3 L 249.0,539.7 L 242.0,521.7 Z M 211.3,521.0 L 217.0,550.3 L 235.3,550.7 L 234.7,545.0 L 224.3,545.0 L 222.0,539.7 L 222.7,538.7 L 232.0,538.7 L 231.7,533.7 L 221.3,533.0 L 220.0,529.3 L 221.0,526.7 L 231.0,526.7 L 230.3,521.7 Z M 177.0,521.3 L 183.0,550.7 L 189.7,550.3 L 186.7,533.0 L 202.7,550.3 L 210.3,550.3 L 204.7,521.3 L 197.3,521.0 L 200.3,538.7 L 184.7,521.3 Z" fill="#ffffff" fill-rule="evenodd"/>
@@ -298,6 +299,7 @@ export function renderChrome() {
   initBackToTop();
   initForegroundMessages();
   initNotificationReminder();
+  trackPageView();
   window.addEventListener("beforeinstallprompt", event => {
     event.preventDefault();
     deferredInstallPrompt = event;
