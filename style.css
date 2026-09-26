@@ -1327,3 +1327,30 @@ body.hero-page .site-header.scrolled {
   display: inline-block; margin-inline-start: 6px; font-size: 0.7rem; font-weight: 700;
   color: var(--brand); background: rgba(205,250,10,0.1); padding: 2px 8px; border-radius: var(--r-pill);
 }
+
+/* ================= Backdrop focal-point picker ================= */
+.input-with-icon { display: flex; gap: 8px; align-items: center; }
+.input-with-icon input[type="text"] { flex: 1; }
+.icon-btn {
+  flex-shrink: 0; width: 44px; height: 44px; border-radius: var(--r-sm);
+  background: var(--surface-2); border: 1px solid var(--line); color: var(--paper-dim);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: color .2s ease, border-color .2s ease;
+}
+.icon-btn:hover { color: var(--brand); border-color: var(--brand); }
+.icon-btn svg { width: 18px; height: 18px; }
+.focal-modal-box { max-width: 560px; text-align: right; }
+.focal-modal-box h3 { margin: 0 0 8px; }
+.focal-picker {
+  position: relative; width: 100%; aspect-ratio: 16 / 9; margin: 14px 0;
+  border-radius: var(--r-md); overflow: hidden; background: #000; cursor: crosshair;
+}
+.focal-picker img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.focal-marker {
+  position: absolute; width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--brand); box-shadow: 0 0 0 2px rgba(0,0,0,0.6), 0 0 12px rgba(0,0,0,0.5);
+  transform: translate(-50%, -50%); pointer-events: none; left: 50%; top: 50%;
+}
+.focal-marker::after {
+  content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--brand);
+}
