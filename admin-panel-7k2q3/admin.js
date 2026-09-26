@@ -9,7 +9,7 @@ import {
 import {
   getFunctions, httpsCallable
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-functions.js";
-import { showToast, setButtonLoading } from "../js/ui.js";
+import { showToast, setButtonLoading, PERSON_ICON } from "../js/ui.js";
 
 const onLoginPage = document.getElementById("loginBtn") !== null;
 const onDashboard = document.getElementById("adminMovieList") !== null;
@@ -164,6 +164,7 @@ async function initDashboard() {
   document.getElementById("saveActorBtn").addEventListener("click", saveActor);
   document.getElementById("cancelActorEditBtn").addEventListener("click", resetActorForm);
   document.getElementById("mCastSearch").addEventListener("input", () => renderCastPicker(getSelectedCastIds()));
+  document.getElementById("mCastBulkBtn").addEventListener("click", applyCastBulkInput);
   document.getElementById("saveSettingsBtn").addEventListener("click", saveSiteSettings);
   document.getElementById("notifSendBtn").addEventListener("click", sendNotificationToAllUsers);
   refreshTokenCount();
@@ -313,7 +314,7 @@ async function loadActors() {
   listBox.innerHTML = allActorsCache.length
     ? allActorsCache.map(a => `
       <div class="admin-list-item" data-id="${a.id}">
-        <img class="admin-actor-thumb" src="${a.photoUrl || ""}" alt="" onerror="this.style.visibility='hidden'">
+        <span class="admin-actor-thumb">${a.photoUrl ? `<img src="${a.photoUrl}" alt="" onerror="this.remove()">` : PERSON_ICON}</span>
         <div class="info"><strong>${a.name || "(بدون نام)"}</strong>${a.featured ? ` <span class="badge-featured">ویژه · صفحه اصلی</span>` : ""}</div>
         <div class="actions"><button class="btn-small edit-actor-btn">ویرایش</button><button class="btn-small danger delete-actor-btn">حذف</button></div>
       </div>`).join("")
@@ -364,7 +365,7 @@ function renderCastPicker(previouslySelectedIds) {
     ? list.map(a => `
       <label class="chip category-chip cast-chip-picker">
         <input type="checkbox" value="${a.id}" ${selected.has(a.id) ? "checked" : ""} style="display:none;">
-        <img src="${a.photoUrl || ""}" alt="" onerror="this.style.visibility='hidden'">
+        ${a.photoUrl ? `<img src="${a.photoUrl}" alt="" onerror="this.remove()">` : PERSON_ICON}
         ${a.name || "(بدون نام)"}
       </label>`).join("")
     : `<p class="empty-note" style="padding:0;">${allActorsCache.length ? "چیزی با این جستجو پیدا نشد." : "اول از تب «بازیگران» چندتا بازیگر اضافه کن."}</p>`;
@@ -386,6 +387,43 @@ function getSelectedCastIds() {
 
 function setSelectedCastIds(ids) {
   renderCastPicker(ids);
+}
+
+// از یه رشته‌ی "Jackie Chan, Ma Li, ..." هر اسم رو یا با بازیگر موجود (تطبیق
+// دقیق نام، بدون حساسیت به حروف بزرگ/کوچک) یکی می‌کنه، یا اگه نبود، یک بازیگر
+// تازه فقط با همون اسم (بدون عکس) می‌سازه — نتیجه هم توی تیک‌های پایین اعمال می‌شه.
+async function applyCastBulkInput() {
+  const raw = document.getElementById("mCastBulkInput").value;
+  const names = raw.split(",").map(s => s.trim()).filter(Boolean);
+  if (!names.length) return;
+
+  const btn = document.getElementById("mCastBulkBtn");
+  setButtonLoading(btn, true);
+  try {
+    const selected = new Set(getSelectedCastIds());
+    let createdCount = 0;
+    for (const name of names) {
+      const existing = allActorsCache.find(a => (a.name || "").trim().toLocaleLowerCase() === name.toLocaleLowerCase());
+      if (existing) {
+        selected.add(existing.id);
+      } else {
+        const ref = await addDoc(collection(db, "actors"), { name, photoUrl: "", featured: false, createdAt: serverTimestamp() });
+        allActorsCache.push({ id: ref.id, name, photoUrl: "", featured: false });
+        selected.add(ref.id);
+        createdCount++;
+      }
+    }
+    allActorsCache.sort((a, b) => (a.name || "").localeCompare(b.name || "", "fa"));
+    document.getElementById("mCastSearch").value = "";
+    renderCastPicker([...selected]);
+    document.getElementById("mCastBulkInput").value = "";
+    showToast(createdCount ? `${names.length} بازیگر اعمال شد (${createdCount} تای جدید ساخته شد)` : `${names.length} بازیگر اعمال شد`);
+  } catch (e) {
+    console.error("bulk cast apply failed", e);
+    showToast("خطا در پردازش لیست بازیگران", "err");
+  } finally {
+    setButtonLoading(btn, false);
+  }
 }
 
 async function saveActor() {
@@ -840,6 +878,7 @@ function resetMovieForm() {
   document.getElementById("mType").value = "movie";
   document.getElementById("mActive").value = "true";
   document.getElementById("mCastSearch").value = "";
+  document.getElementById("mCastBulkInput").value = "";
   setSelectedCategoryIds([]);
   setSelectedCastIds([]);
   setDlRows([]);
