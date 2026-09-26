@@ -10,6 +10,9 @@ export const STAR_OUTLINE = `<svg viewBox="0 0 24 24" width="14" height="14" fil
 export const THUMB_OUTLINE = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
 export const THUMB_FILLED = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
 export const PLAY_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>`;
+// آواتار پیش‌فرض هر بازیگری که هنوز عکس نداره (مثلاً وقتی از روی اسم خام
+// خودکار ساخته می‌شه) — به‌جای دایره‌ی کاملاً خالی.
+export const PERSON_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>`;
 
 export function escapeHTML(str) {
   return String(str ?? "").replace(/[&<>"']/g, c => ({
@@ -233,7 +236,7 @@ watchVisitor(async (user) => {
 });
 
 
-const NEW_BADGE_DAYS = 3;
+const NEW_BADGE_DAYS = 7;
 
 export function movieCardHTML(m) {
   const typeLabel = m.type === "series" ? "سریال" : "فیلم";
