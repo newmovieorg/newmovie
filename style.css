@@ -726,7 +726,7 @@ body { animation: pageFadeIn .35s ease; }
 .detail-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; margin: 0 0 12px; }
 .detail-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
 .detail-tags span { font-size: 0.85rem; color: var(--paper-dim); background: rgba(255,255,255,0.06); padding: 4px 12px; border-radius: var(--r-pill); border: 1px solid var(--glass-border); display: inline-flex; align-items: center; gap: 5px; }
-.detail-tags svg { width: 13px; height: 13px; color: var(--brand); flex-shrink: 0; }
+.detail-tags svg { width: 13px; height: 13px; color: #000; flex-shrink: 0; }
 .detail-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
 .detail-body { padding: 34px 0; }
@@ -1097,9 +1097,9 @@ body.hero-page .site-header.scrolled {
 .detail-lead { margin: -6px 0 18px; color: var(--paper-faint); font-size: .88rem; }
 .detail-tags { margin-bottom: 20px; }
 .detail-tags span {
-  color: var(--paper-dim); background: rgba(0,0,0,.34); border-color: rgba(255,255,255,.16);
+  color: #1a1a1a; background: #e8e8e8; border-color: transparent; font-weight: 700;
 }
-.detail-tags span.tag-rating { color: var(--brand); }
+.detail-tags span.tag-rating { color: #000; background: #f5c518; }
 .detail-genres { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .genre-chip {
   display: inline-flex; align-items: center; min-height: 32px; padding: 5px 12px;
