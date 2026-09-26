@@ -1,6 +1,6 @@
 import { watchMovies, watchCategories, watchActors } from "./data.js";
 import { trackDownload } from "./analytics.js";
-import { movieCardHTML, isFavorite, toggleFavorite, isLiked, toggleLike, shareItem, skeletonCards, STAR_FILLED, STAR_OUTLINE, THUMB_FILLED, THUMB_OUTLINE, PLAY_ICON, escapeHTML } from "./ui.js";
+import { movieCardHTML, isFavorite, toggleFavorite, isLiked, toggleLike, shareItem, skeletonCards, STAR_FILLED, STAR_OUTLINE, THUMB_FILLED, THUMB_OUTLINE, PLAY_ICON, PERSON_ICON, escapeHTML } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 import {
   fetchComments, renderRatingSummary, renderComments, mountCommentWidget,
@@ -233,7 +233,7 @@ function render(m, allMovies, categories, actors) {
       .filter(Boolean)
       .map(a => `
         <a class="cast-chip" href="actor.html?id=${a.id}">
-          <span class="cast-chip-photo">${a.photoUrl ? `<img src="${escapeHTML(a.photoUrl)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>
+          <span class="cast-chip-photo">${a.photoUrl ? `<img src="${escapeHTML(a.photoUrl)}" alt="" loading="lazy" onerror="this.remove()">` : PERSON_ICON}</span>
           <span>${escapeHTML(a.name || "")}</span>
         </a>`).join("");
     document.getElementById("castRow").innerHTML = castRow;
