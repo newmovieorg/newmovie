@@ -1,4 +1,5 @@
 import { watchMovies, watchCategories, watchActors } from "./data.js";
+import { trackDownload } from "./analytics.js";
 import { movieCardHTML, isFavorite, toggleFavorite, isLiked, toggleLike, shareItem, skeletonCards, STAR_FILLED, STAR_OUTLINE, THUMB_FILLED, THUMB_OUTLINE, PLAY_ICON, escapeHTML } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 import {
@@ -261,8 +262,8 @@ function render(m, allMovies, categories, actors) {
   const dlSection = document.getElementById("downloadSection");
   const links = Array.isArray(m.downloadLinks) ? m.downloadLinks.filter(l => l && l.url) : [];
   if (links.length) {
-    document.getElementById("downloadList").innerHTML = links.map(l => `
-      <a class="download-item" href="${escapeHTML(l.url)}" target="_blank" rel="noopener">
+    document.getElementById("downloadList").innerHTML = links.map((l, idx) => `
+      <a class="download-item" href="${escapeHTML(l.url)}" target="_blank" rel="noopener" data-dl-index="${idx}">
         <span class="download-info">
           <strong>${escapeHTML(l.label || "لینک دانلود")}</strong>
           ${l.size ? `<span>${escapeHTML(l.size)}</span>` : ""}
@@ -270,6 +271,9 @@ function render(m, allMovies, categories, actors) {
         <span class="download-btn">دانلود</span>
       </a>
     `).join("");
+    document.querySelectorAll('#downloadList .download-item').forEach(a => {
+      a.addEventListener("click", () => trackDownload(m.id, m.title), { once: true });
+    });
   } else {
     document.getElementById("downloadList").innerHTML = `<p class="empty-note" style="padding:4px 0;text-align:right;">هنوز لینک دانلودی برای این عنوان ثبت نشده است.</p>`;
   }
