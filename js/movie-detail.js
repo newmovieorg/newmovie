@@ -166,8 +166,11 @@ function render(m, allMovies, categories, actors) {
   const bg = m.backdropUrl || m.posterUrl || "";
   hero.classList.toggle("has-backdrop", Boolean(bg));
   const bgUrl = bg ? `url("${String(bg).replace(/"/g, '\\"')}")` : "";
+  const bgPos = m.backdropPosition || "center";
   document.getElementById("detailHeroBg").style.backgroundImage = bgUrl;
+  document.getElementById("detailHeroBg").style.backgroundPosition = bgPos;
   document.getElementById("detailHeroFg").style.backgroundImage = bgUrl;
+  document.getElementById("detailHeroFg").style.backgroundPosition = bgPos;
   const posterEl = document.getElementById("detailPoster");
   const posterFrame = document.getElementById("detailPosterFrame");
   posterEl.hidden = !m.posterUrl;
