@@ -1339,6 +1339,11 @@ body.hero-page .site-header.scrolled {
 }
 .icon-btn:hover { color: var(--brand); border-color: var(--brand); }
 .icon-btn svg { width: 18px; height: 18px; }
+/* این مودال، بر خلاف بقیه‌ی مودال‌های سایت، به‌صورت ثابت توی HTML صفحه‌ست
+   (نه اینکه فقط موقع نیاز با جاوااسکریپت ساخته و اضافه بشه) — پس برخلاف
+   .modal-overlay عمومی، باید صراحتاً حالت پیش‌فرضِ مخفی داشته باشه. */
+#focalModalOverlay { display: none; }
+#focalModalOverlay.open { display: flex; }
 .focal-modal-box { max-width: 560px; text-align: right; }
 .focal-modal-box h3 { margin: 0 0 8px; }
 .focal-picker {
