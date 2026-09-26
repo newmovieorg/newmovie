@@ -1,5 +1,5 @@
 import { watchMovies, watchHeroes, watchCategories, watchActors } from "./data.js";
-import { skeletonCards, movieCardHTML, escapeHTML } from "./ui.js";
+import { skeletonCards, movieCardHTML, escapeHTML, PERSON_ICON } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 
 renderChrome();
@@ -142,7 +142,7 @@ function renderActorsSection(actors) {
   section.style.display = "";
   row.innerHTML = featured.map(a => `
     <a class="actor-card" href="actor.html?id=${a.id}">
-      <span class="actor-card-photo">${a.photoUrl ? `<img src="${escapeHTML(a.photoUrl)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>
+      <span class="actor-card-photo">${a.photoUrl ? `<img src="${escapeHTML(a.photoUrl)}" alt="" loading="lazy" onerror="this.remove()">` : PERSON_ICON}</span>
       <span class="actor-card-name">${escapeHTML(a.name || "")}</span>
     </a>`).join("");
 }
