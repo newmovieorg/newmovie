@@ -4,7 +4,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
   collection, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-  serverTimestamp, orderBy, query, collectionGroup, getCountFromServer
+  serverTimestamp, orderBy, query, collectionGroup, getCountFromServer, where, limit, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import {
   getFunctions, httpsCallable
@@ -143,7 +143,7 @@ async function initDashboard() {
   const loaders = [
     ["ژانرها", loadGenres], ["بازیگران", loadActors], ["فیلم‌ها", loadMovies], ["هیروها", loadHeroes],
     ["نظرات/سوالات", loadFeedback], ["بازدیدکنندگان", loadVisitors], ["IPهای مسدود", loadBlockedIps],
-    ["تنظیمات سایت", loadSiteSettings],
+    ["تنظیمات سایت", loadSiteSettings], ["آمار و نمودارها", loadAnalytics],
   ];
   for (const [label, fn] of loaders) {
     try {
@@ -613,6 +613,111 @@ function updateFocalMarker(pos) {
 function closeFocalModal() {
   document.getElementById("focalModalOverlay").classList.remove("open");
   focalTargetPosInput = null;
+}
+
+// ---------- Analytics (visits, downloads) ----------
+// همه‌چیز از روی نوشتن مستقیم کلاینت توی Firestore جمع میشه (سرور جدا نداریم)،
+// پس تقریبیه و در برابر سوءاستفاده‌ی عمدی مقاوم نیست — دقیقاً همون محدودیتی که
+// شمارنده‌ی لایک‌ها هم داره.
+
+function lastNDaysLabels(n) {
+  const days = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  return days;
+}
+function dayKey(date) { return date.toISOString().slice(0, 10); }
+function formatDayLabel(date) { return date.toLocaleDateString("fa-IR", { month: "short", day: "numeric" }); }
+
+function renderLineChart(canvasId, labels, data, label, color) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx || typeof Chart === "undefined") return;
+  Chart.getChart(ctx)?.destroy();
+  new Chart(ctx, {
+    type: "line",
+    data: { labels, datasets: [{ label, data, borderColor: color, backgroundColor: color + "33", tension: 0.3, fill: true }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { ticks: { color: "#999" }, grid: { color: "#222" } },
+        y: { beginAtZero: true, ticks: { color: "#999", precision: 0 }, grid: { color: "#222" } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderBarChart(canvasId, labels, data, label, color) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx || typeof Chart === "undefined") return;
+  Chart.getChart(ctx)?.destroy();
+  new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ label, data, backgroundColor: color }] },
+    options: {
+      indexAxis: "y", responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { beginAtZero: true, ticks: { color: "#999", precision: 0 }, grid: { color: "#222" } },
+        y: { ticks: { color: "#999" }, grid: { color: "#222" } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+async function loadAnalytics() {
+  const days = lastNDaysLabels(14);
+  const since = new Date();
+  since.setDate(since.getDate() - 14);
+  const sinceTs = Timestamp.fromDate(since);
+
+  let pageViews = [];
+  try {
+    const snap = await getDocs(query(collection(db, "pageViews"), where("createdAt", ">=", sinceTs), orderBy("createdAt", "desc"), limit(3000)));
+    pageViews = snap.docs.map(d => d.data());
+  } catch (e) { console.error("خطا در بارگذاری بازدیدها:", e); }
+
+  const visitCounts = {};
+  days.forEach(d => visitCounts[dayKey(d)] = 0);
+  pageViews.forEach(pv => {
+    const key = pv.createdAt?.toDate ? dayKey(pv.createdAt.toDate()) : null;
+    if (key && key in visitCounts) visitCounts[key]++;
+  });
+  renderLineChart("chartVisits", days.map(formatDayLabel), days.map(d => visitCounts[dayKey(d)]), "بازدید", "#cdfa0a");
+
+  let downloads = [];
+  try {
+    const snap = await getDocs(query(collection(db, "downloads"), where("createdAt", ">=", sinceTs), orderBy("createdAt", "desc"), limit(3000)));
+    downloads = snap.docs.map(d => d.data());
+  } catch (e) { console.error("خطا در بارگذاری دانلودها:", e); }
+
+  const dlCounts = {};
+  days.forEach(d => dlCounts[dayKey(d)] = 0);
+  downloads.forEach(dl => {
+    const key = dl.createdAt?.toDate ? dayKey(dl.createdAt.toDate()) : null;
+    if (key && key in dlCounts) dlCounts[key]++;
+  });
+  renderLineChart("chartDownloads", days.map(formatDayLabel), days.map(d => dlCounts[dayKey(d)]), "دانلود", "#4dc9ff");
+
+  const top = [...allMoviesCache].filter(m => m.downloadsCount > 0)
+    .sort((a, b) => (b.downloadsCount || 0) - (a.downloadsCount || 0)).slice(0, 8);
+  renderBarChart("chartTopDownloads", top.map(m => m.title || "بدون‌نام"), top.map(m => m.downloadsCount || 0), "دانلود", "#ff8a4d");
+
+  const listBox = document.getElementById("adminVisitsList");
+  const recent = pageViews.slice(0, 60);
+  listBox.innerHTML = recent.length
+    ? recent.map(pv => `
+      <div class="admin-list-item visit-row">
+        <div class="info">
+          <strong>${pv.ip || "نامشخص"}</strong>
+          <span>${pv.deviceType || "-"} · ${pv.path || "-"} · ${pv.createdAt?.toDate ? pv.createdAt.toDate().toLocaleString("fa-IR") : "-"}</span>
+        </div>
+        <span class="${pv.uid ? "badge-featured" : "badge-guest"}">${pv.uid ? "ثبت‌نام‌کرده" : "مهمان"}</span>
+      </div>`).join("")
+    : `<p class="empty-note">هنوز بازدیدی ثبت نشده.</p>`;
 }
 
 // ---------- Movies / Series ----------
