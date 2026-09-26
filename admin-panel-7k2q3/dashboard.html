@@ -94,7 +94,14 @@
       <div class="field"><label>خلاصه داستان</label><textarea id="mSynopsis"></textarea></div>
       <div class="form-row">
         <div class="field"><label>لینک پوستر</label><input type="text" id="mPoster" placeholder="https://..."></div>
-        <div class="field"><label>لینک بک‌دراپ (تصویر بزرگ صفحه جزئیات، اختیاری)</label><input type="text" id="mBackdrop" placeholder="https://..."></div>
+        <div class="field">
+          <label>لینک بک‌دراپ (تصویر بزرگ صفحه جزئیات، اختیاری)</label>
+          <div class="input-with-icon">
+            <input type="text" id="mBackdrop" placeholder="https://...">
+            <input type="hidden" id="mBackdropPosition">
+            <button type="button" class="icon-btn crop-focal-btn" data-url-input="mBackdrop" data-pos-input="mBackdropPosition" title="انتخاب قسمت نمایش‌داده‌شده"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/></svg></button>
+          </div>
+        </div>
       </div>
       <div class="field"><label>لینک تریلر (اختیاری)</label><input type="text" id="mTrailer" placeholder="https://..."></div>
       <div class="field">
@@ -137,7 +144,14 @@
         <div class="field"><label>ژانر (اختیاری)</label><input type="text" id="heroGenre"></div>
         <div class="field"><label>ترتیب نمایش</label><input type="text" id="heroOrder" placeholder="0"></div>
       </div>
-      <div class="field"><label>لینک تصویر پس‌زمینه</label><input type="text" id="heroBackdrop" placeholder="https://..."></div>
+      <div class="field">
+        <label>لینک تصویر پس‌زمینه</label>
+        <div class="input-with-icon">
+          <input type="text" id="heroBackdrop" placeholder="https://...">
+          <input type="hidden" id="heroBackdropPosition">
+          <button type="button" class="icon-btn crop-focal-btn" data-url-input="heroBackdrop" data-pos-input="heroBackdropPosition" title="انتخاب قسمت نمایش‌داده‌شده"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/></svg></button>
+        </div>
+      </div>
       <div class="field">
         <label>وضعیت</label>
         <select id="heroActive"><option value="true">فعال</option><option value="false">غیرفعال</option></select>
@@ -272,6 +286,22 @@
       <button class="btn btn-primary" id="notifSendBtn">ارسال برای همه</button>
       <p class="status-msg" id="notifStatus"></p>
       <p class="admin-help" id="notifTokenCount"></p>
+    </div>
+  </div>
+</div>
+
+<!-- Focal-point picker: shared by the movie backdrop and hero backdrop fields -->
+<div class="modal-overlay" id="focalModalOverlay">
+  <div class="modal-box focal-modal-box">
+    <h3>نقطه‌ی نمایش تصویر</h3>
+    <p class="admin-help">روی تصویر کلیک کن تا مشخص کنی کدوم قسمتش همیشه توی هیرو/جزئیات فیلم دیده بشه (برای صفحه‌نمایش‌های باریک هم همینه که کراپ می‌شه).</p>
+    <div class="focal-picker" id="focalPicker">
+      <img id="focalPickerImg" src="" alt="">
+      <div class="focal-marker" id="focalMarker"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-small" id="focalConfirmBtn">تایید</button>
+      <button class="btn-small" id="focalCancelBtn">انصراف</button>
     </div>
   </div>
 </div>
