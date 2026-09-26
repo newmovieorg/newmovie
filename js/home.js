@@ -20,8 +20,8 @@ function renderHero(heroes) {
   heroIndex = Math.min(heroIndex, heroes.length - 1);
   box.innerHTML = heroes.map((h, i) => `
     <div class="hero-slide ${i === heroIndex ? "active" : ""}" data-i="${i}">
-      <div class="hero-slide-bg" style="background-image:url('${escapeHTML(h.backdropUrl || "")}')"></div>
-      <div class="hero-slide-fg" style="background-image:url('${escapeHTML(h.backdropUrl || "")}')"></div>
+      <div class="hero-slide-bg" style="background-image:url('${escapeHTML(h.backdropUrl || "")}');background-position:${escapeHTML(h.backdropPosition || "center")}"></div>
+      <div class="hero-slide-fg" style="background-image:url('${escapeHTML(h.backdropUrl || "")}');background-position:${escapeHTML(h.backdropPosition || "center")}"></div>
       <div class="hero-slide-overlay"></div>
       <div class="wrap">
         <div class="hero-inner">
