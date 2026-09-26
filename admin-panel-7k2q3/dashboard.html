@@ -110,8 +110,10 @@
       </div>
       <div class="field"><label>کارگردان</label><input type="text" id="mDirector"></div>
       <div class="field">
-        <label>بازیگران (اول از تب «بازیگران» اضافه‌شون کن، بعد اینجا انتخابشون کن)</label>
-        <input type="text" id="mCastSearch" placeholder="جستجوی نام بازیگر...">
+        <label>بازیگران</label>
+        <textarea id="mCastBulkInput" rows="2" placeholder="نام بازیگرها رو با کاما جدا کن، مثلاً: Jackie Chan, Ma Li, Qiao Shan — هرکدوم توی لیست «بازیگران» بود انتخاب می‌شه، هرکدوم نبود خودش خودکار ساخته می‌شه."></textarea>
+        <button type="button" class="btn-small" id="mCastBulkBtn" style="margin-top:8px;">اعمال روی لیست پایین</button>
+        <input type="text" id="mCastSearch" placeholder="یا بین بازیگرهای موجود جستجو کن..." style="margin-top:12px;">
         <div class="chip-row cast-picker" id="mCastPicker"></div>
       </div>
       <div class="field"><label>خلاصه داستان</label><textarea id="mSynopsis"></textarea></div>
