@@ -1286,13 +1286,17 @@ body.hero-page .site-header.scrolled {
 
 /* ================= Actors ================= */
 .admin-actor-thumb {
-  width: 46px; height: 46px; border-radius: 50%; object-fit: cover;
-  background: var(--surface); flex-shrink: 0;
+  width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; overflow: hidden;
+  background: var(--surface); display: flex; align-items: center; justify-content: center;
+  color: var(--paper-faint);
 }
+.admin-actor-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.admin-actor-thumb svg { width: 22px; height: 22px; }
 .cast-chip-picker { gap: 8px; }
-.cast-chip-picker img {
+.cast-chip-picker img, .cast-chip-picker svg {
   width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: var(--surface-2); flex-shrink: 0;
 }
+.cast-chip-picker svg { padding: 3px; color: var(--paper-faint); }
 
 /* Home page actors row */
 .actor-card {
@@ -1369,4 +1373,9 @@ body.hero-page .site-header.scrolled {
   display: inline-block; font-size: 0.7rem; font-weight: 700;
   color: var(--paper-dim); background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: var(--r-pill);
   flex-shrink: 0;
+}
+
+.actor-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 20px 10px; justify-items: center;
 }
