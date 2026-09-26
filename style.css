@@ -1359,3 +1359,14 @@ body.hero-page .site-header.scrolled {
 .focal-marker::after {
   content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--brand);
 }
+
+/* ================= Admin analytics (overview page) ================= */
+.chart-box { position: relative; height: 260px; width: 100%; }
+.visit-row { justify-content: space-between; }
+.visit-row .info { display: flex; flex-direction: column; gap: 2px; }
+.visit-row .info span { color: var(--paper-faint); font-size: 0.78rem; }
+.badge-guest {
+  display: inline-block; font-size: 0.7rem; font-weight: 700;
+  color: var(--paper-dim); background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: var(--r-pill);
+  flex-shrink: 0;
+}
