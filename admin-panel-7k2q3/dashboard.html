@@ -11,6 +11,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
 <link rel="stylesheet" href="../style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body class="admin-body">
 
@@ -42,6 +43,28 @@
         <div class="meta-item"><span>هیروهای فعال</span><strong id="statHeroes">—</strong></div>
         <div class="meta-item"><span>تعداد ژانرها</span><strong id="statGenres">—</strong></div>
       </div>
+    </div>
+
+    <div class="admin-panel">
+      <h2>بازدید سایت (۱۴ روز اخیر)</h2>
+      <p class="admin-help">این آمار از روی بارگذاری صفحات ثبت می‌شه؛ چون سرور جدا نداریم، تقریبیه نه دقیق آماری سطح enterprise.</p>
+      <div class="chart-box"><canvas id="chartVisits"></canvas></div>
+    </div>
+
+    <div class="admin-panel">
+      <h2>تعداد دانلودها (۱۴ روز اخیر)</h2>
+      <div class="chart-box"><canvas id="chartDownloads"></canvas></div>
+    </div>
+
+    <div class="admin-panel">
+      <h2>پردانلودترین عنوان‌ها</h2>
+      <div class="chart-box"><canvas id="chartTopDownloads"></canvas></div>
+    </div>
+
+    <div class="admin-panel">
+      <h2>بازدیدکنندگان اخیر سایت</h2>
+      <p class="admin-help">شامل کسانی هم می‌شه که فقط سایت رو باز کردن و ثبت‌نام نکردن — آی‌پی از روی سرویس خارجی self-report می‌شه، نه از سمت سرور، پس صد‌درصد غیرقابل‌جعل نیست.</p>
+      <div class="admin-list" id="adminVisitsList"><p class="empty-note">در حال بارگذاری...</p></div>
     </div>
   </div>
 
