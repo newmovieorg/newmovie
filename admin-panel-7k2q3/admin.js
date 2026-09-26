@@ -167,6 +167,7 @@ async function initDashboard() {
   document.getElementById("saveSettingsBtn").addEventListener("click", saveSiteSettings);
   document.getElementById("notifSendBtn").addEventListener("click", sendNotificationToAllUsers);
   refreshTokenCount();
+  initFocalPicker();
 }
 
 function updateStats() {
@@ -561,6 +562,59 @@ async function sendNotificationToAllUsers() {
   }
 }
 
+// ---------- Focal-point picker (backdrop position for hero & movie detail) ----------
+// این "برش" واقعی نیست (فایل جدیدی ساخته نمی‌شه، چون این پروژه سرویس آپلود/ذخیره‌ی
+// عکس نداره و همه‌چیز از روی لینک مستقیمه) — نقطه‌ی کانونی تصویر رو ذخیره می‌کنه
+// و همون لینک با background-position متفاوت توی هیرو/جزئیات فیلم نمایش داده می‌شه.
+let focalTargetPosInput = null;
+let focalPendingPos = "50% 50%";
+
+function initFocalPicker() {
+  document.querySelectorAll(".crop-focal-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const urlInput = document.getElementById(btn.dataset.urlInput);
+      const posInput = document.getElementById(btn.dataset.posInput);
+      const url = urlInput.value.trim();
+      if (!url) { showToast("اول یه لینک تصویر وارد کن", "err"); return; }
+      focalTargetPosInput = posInput;
+      focalPendingPos = posInput.value.trim() || "50% 50%";
+      document.getElementById("focalPickerImg").src = url;
+      updateFocalMarker(focalPendingPos);
+      document.getElementById("focalModalOverlay").classList.add("open");
+    });
+  });
+
+  const picker = document.getElementById("focalPicker");
+  picker.addEventListener("click", (e) => {
+    const rect = picker.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    focalPendingPos = `${x.toFixed(1)}% ${y.toFixed(1)}%`;
+    updateFocalMarker(focalPendingPos);
+  });
+
+  document.getElementById("focalConfirmBtn").addEventListener("click", () => {
+    if (focalTargetPosInput) focalTargetPosInput.value = focalPendingPos;
+    closeFocalModal();
+  });
+  document.getElementById("focalCancelBtn").addEventListener("click", closeFocalModal);
+  document.getElementById("focalModalOverlay").addEventListener("click", (e) => {
+    if (e.target.id === "focalModalOverlay") closeFocalModal();
+  });
+}
+
+function updateFocalMarker(pos) {
+  const [x, y] = pos.split(" ");
+  const marker = document.getElementById("focalMarker");
+  marker.style.left = x;
+  marker.style.top = y;
+}
+
+function closeFocalModal() {
+  document.getElementById("focalModalOverlay").classList.remove("open");
+  focalTargetPosInput = null;
+}
+
 // ---------- Movies / Series ----------
 
 async function loadMovies() {
@@ -677,6 +731,7 @@ function fillMovieForm(m) {
   document.getElementById("mSynopsis").value = m.synopsis || "";
   document.getElementById("mPoster").value = m.posterUrl || "";
   document.getElementById("mBackdrop").value = m.backdropUrl || "";
+  document.getElementById("mBackdropPosition").value = m.backdropPosition || "";
   document.getElementById("mTrailer").value = m.trailerUrl || "";
   setDlRows(m.downloadLinks);
   document.getElementById("cancelEditBtn").style.display = "inline-block";
@@ -687,7 +742,7 @@ function resetMovieForm() {
   editingMovieId = null;
   document.getElementById("movieFormTitle").textContent = "افزودن فیلم/سریال جدید";
   ["mOriginalTitle","mTitle","mGenre","mYear","mRuntime","mRating","mVotes","mPopularity",
-   "mCountry","mLanguage","mDirector","mSynopsis","mPoster","mBackdrop","mTrailer"]
+   "mCountry","mLanguage","mDirector","mSynopsis","mPoster","mBackdrop","mBackdropPosition","mTrailer"]
     .forEach(id => document.getElementById(id).value = "");
   document.getElementById("mType").value = "movie";
   document.getElementById("mActive").value = "true";
@@ -728,6 +783,7 @@ async function saveMovie() {
     synopsis: document.getElementById("mSynopsis").value.trim(),
     posterUrl: document.getElementById("mPoster").value.trim(),
     backdropUrl: document.getElementById("mBackdrop").value.trim(),
+    backdropPosition: document.getElementById("mBackdropPosition").value.trim(),
     trailerUrl: document.getElementById("mTrailer").value.trim(),
     downloadLinks: collectDlRows(),
   };
@@ -817,6 +873,7 @@ function fillHeroForm(h) {
   document.getElementById("heroGenre").value = h.genre || "";
   document.getElementById("heroOrder").value = h.order ?? 0;
   document.getElementById("heroBackdrop").value = h.backdropUrl || "";
+  document.getElementById("heroBackdropPosition").value = h.backdropPosition || "";
   document.getElementById("heroActive").value = String(h.active !== false);
   document.getElementById("cancelHeroEditBtn").style.display = "inline-block";
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -825,7 +882,7 @@ function fillHeroForm(h) {
 function resetHeroForm() {
   editingHeroId = null;
   document.getElementById("heroFormTitle").textContent = "افزودن هیرو جدید";
-  ["heroKicker","heroTitle","heroDesc","heroYear","heroGenre","heroBackdrop"].forEach(id => document.getElementById(id).value = "");
+  ["heroKicker","heroTitle","heroDesc","heroYear","heroGenre","heroBackdrop","heroBackdropPosition"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("heroMovieSelect").value = "";
   document.getElementById("heroOrder").value = "0";
   document.getElementById("heroActive").value = "true";
@@ -846,6 +903,7 @@ async function saveHero() {
     genre: document.getElementById("heroGenre").value.trim(),
     order: toNumOrNull(document.getElementById("heroOrder").value) ?? 0,
     backdropUrl: document.getElementById("heroBackdrop").value.trim(),
+    backdropPosition: document.getElementById("heroBackdropPosition").value.trim(),
     movieId: document.getElementById("heroMovieSelect").value || null,
     active: document.getElementById("heroActive").value === "true",
   };
