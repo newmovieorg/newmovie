@@ -1379,3 +1379,6 @@ body.hero-page .site-header.scrolled {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
   gap: 20px 10px; justify-items: center;
 }
+
+.seo-intro { padding: 20px 0 40px; max-width: 900px; }
+.seo-intro p { color: var(--paper-faint); font-size: 0.85rem; line-height: 2; margin: 10px 0 0; }
