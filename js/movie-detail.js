@@ -82,14 +82,29 @@ function openTrailerModal(embedUrl, originalUrl) {
 const params = new URLSearchParams(location.search);
 const id = params.get("id");
 
-function setMeta(m) {
-  document.title = `${m.title} | نیو مووی`;
-  const desc = (m.synopsis || "").slice(0, 155);
+function setMeta(m, actors) {
+  const typeWord = m.type === "series" ? "سریال" : "فیلم";
+  const yearPart = m.year ? ` (${m.year})` : "";
+  // عنوان و توضیحات با همون کلماتی که کاربرا واقعاً سرچ می‌کنن ("دانلود فیلم"،
+  // "تماشای آنلاین") شروع می‌شه، بدون ادعای دروغ (مثلاً زیرنویس) که داده‌ش رو نداریم.
+  document.title = `دانلود و تماشای آنلاین ${typeWord} ${m.title}${yearPart} | نیو مووی`;
+
+  const infoBits = [];
+  if (m.year) infoBits.push(String(m.year));
+  if (m.genre) infoBits.push(m.genre);
+  if (m.rating) infoBits.push(`امتیاز ${m.rating}`);
+  const prefix = `${typeWord} ${m.title}${infoBits.length ? ` (${infoBits.join("، ")})` : ""} — `;
+  const desc = (prefix + (m.synopsis || "خلاصه داستان، بازیگران، امتیاز و لینک دانلود در نیو مووی.")).slice(0, 158);
+
   let metaDesc = document.querySelector('meta[name="description"]');
   if (!metaDesc) { metaDesc = document.createElement("meta"); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
   metaDesc.content = desc;
 
-  const ogTags = { "og:title": m.title, "og:description": desc, "og:image": m.posterUrl || m.backdropUrl || "og-image.png", "og:type": "video.movie" };
+  const ogTags = {
+    "og:title": document.title, "og:description": desc,
+    "og:image": m.posterUrl || m.backdropUrl || "og-image.png",
+    "og:type": m.type === "series" ? "video.tv_show" : "video.movie"
+  };
   Object.entries(ogTags).forEach(([prop, content]) => {
     let tag = document.querySelector(`meta[property="${prop}"]`);
     if (!tag) { tag = document.createElement("meta"); tag.setAttribute("property", prop); document.head.appendChild(tag); }
@@ -113,13 +128,28 @@ function setMeta(m) {
     ld.id = "detailJsonLd";
     document.head.appendChild(ld);
   }
+  const castIds = Array.isArray(m.castIds) ? m.castIds : [];
+  const actorEntities = castIds
+    .map(aid => (actors || []).find(a => a.id === aid))
+    .filter(Boolean)
+    .map(a => ({ "@type": "Person", name: a.name, url: `${location.origin}${location.pathname.replace(/movie\.html$/, "")}actor.html?id=${a.id}` }));
+
   ld.textContent = JSON.stringify({
     "@context": "https://schema.org",
     "@type": m.type === "series" ? "TVSeries" : "Movie",
     name: m.title,
     description: m.synopsis || "",
     image: m.posterUrl || "",
-    genre: m.genre || undefined
+    genre: m.genre || undefined,
+    datePublished: m.year ? String(m.year) : undefined,
+    url: location.href,
+    actor: actorEntities.length ? actorEntities : undefined,
+    aggregateRating: (m.rating ? {
+      "@type": "AggregateRating",
+      ratingValue: m.rating,
+      ratingCount: m.votes || 1,
+      bestRating: "10"
+    } : undefined)
   });
 }
 
@@ -161,7 +191,7 @@ function render(m, allMovies, categories, actors) {
   document.getElementById("detailHero").hidden = false;
   document.querySelector(".detail-body").hidden = false;
   document.getElementById("detailErrorState").hidden = true;
-  setMeta(m);
+  setMeta(m, actors);
 
   const hero = document.getElementById("detailHero");
   const bg = m.backdropUrl || m.posterUrl || "";
