@@ -166,6 +166,8 @@ async function initDashboard() {
   document.getElementById("mCastSearch").addEventListener("input", () => renderCastPicker(getSelectedCastIds()));
   document.getElementById("mCastBulkBtn").addEventListener("click", applyCastBulkInput);
   document.getElementById("bulkTemplateBtn").addEventListener("click", downloadBulkTemplate);
+  document.getElementById("bulkTemplateCsvBtn").addEventListener("click", downloadBulkTemplateCsv);
+  document.getElementById("bulkPasteImportBtn").addEventListener("click", handleBulkPaste);
   document.getElementById("bulkMovieImportBtn").addEventListener("click", () => {
     const file = document.getElementById("bulkMovieFile").files[0];
     if (!file) { setStatus("bulkImportStatus", "اول یه فایل انتخاب کن.", false); return; }
@@ -780,103 +782,199 @@ async function loadAnalytics() {
     : `<p class="empty-note">هنوز بازدیدی ثبت نشده.</p>`;
 }
 
-// ---------- Bulk movie import (Excel/CSV) ----------
+// ---------- Bulk movie import (Google Sheets / Excel / CSV) ----------
+// سه راه ورودی، همه به یک تابع مشترک (importMovieRows) می‌رسن:
+// ۱) چسباندن مستقیم سلول‌های کپی‌شده از Google Sheets (جداکننده‌ی تب)
+// ۲) فایل CSV (خروجی UTF-8 گوگل شیتس)
+// ۳) فایل xlsx/xls (نیاز به کتابخانه‌ی SheetJS)
+
+const BULK_HEADERS = ["title","originalTitle","type","genre","cast","year","runtime","rating","votes",
+  "popularity","country","language","director","synopsis","posterUrl","backdropUrl","trailerUrl",
+  "downloadLabel","downloadUrl","downloadSize","active"];
+
+const BULK_EXAMPLE = {
+  title: "نمونه فیلم", originalTitle: "Example Movie", type: "movie", genre: "درام، معمایی",
+  cast: "Jackie Chan, Ma Li", year: "2026", runtime: "120", rating: "7.5", votes: "1200",
+  popularity: "50", country: "آمریکا", language: "انگلیسی", director: "اسم کارگردان",
+  synopsis: "خلاصه‌ی داستان فیلم اینجا نوشته می‌شه.", posterUrl: "https://example.com/poster.jpg",
+  backdropUrl: "https://example.com/backdrop.jpg", trailerUrl: "https://youtu.be/xxxxxxxxxxx",
+  downloadLabel: "کیفیت 1080p", downloadUrl: "https://example.com/dl.mp4", downloadSize: "2.1 گیگابایت",
+  active: "true"
+};
+
+// قالب CSV با BOM (تا هم گوگل شیتس هم اکسل فارسی رو درست بخونن) — بدون وابستگی به SheetJS.
+function downloadBulkTemplateCsv() {
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const csv = "\uFEFF" + BULK_HEADERS.map(q).join(",") + "\r\n" + BULK_HEADERS.map(h => q(BULK_EXAMPLE[h] ?? "")).join(",") + "\r\n";
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = "قالب-افزودن-گروهی-فیلم.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
 
 function downloadBulkTemplate() {
-  const headers = ["title","originalTitle","type","genre","cast","year","runtime","rating","votes",
-    "popularity","country","language","director","synopsis","posterUrl","backdropUrl","trailerUrl",
-    "downloadLabel","downloadUrl","downloadSize","active"];
-  const example = {
-    title: "نمونه فیلم", originalTitle: "Example Movie", type: "movie", genre: "درام، معمایی",
-    cast: "Jackie Chan, Ma Li", year: "2026", runtime: "120", rating: "7.5", votes: "1200",
-    popularity: "50", country: "آمریکا", language: "انگلیسی", director: "اسم کارگردان",
-    synopsis: "خلاصه‌ی داستان فیلم اینجا نوشته می‌شه.", posterUrl: "https://example.com/poster.jpg",
-    backdropUrl: "https://example.com/backdrop.jpg", trailerUrl: "https://youtu.be/xxxxxxxxxxx",
-    downloadLabel: "کیفیت 1080p", downloadUrl: "https://example.com/dl.mp4", downloadSize: "2.1 گیگابایت",
-    active: "true"
-  };
-  const ws = XLSX.utils.json_to_sheet([example], { header: headers });
+  if (typeof XLSX === "undefined") { showToast("کتابخانه‌ی اکسل لود نشد؛ قالب CSV رو بگیر", "err"); return; }
+  const ws = XLSX.utils.json_to_sheet([BULK_EXAMPLE], { header: BULK_HEADERS });
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Movies");
   XLSX.writeFile(wb, "قالب-افزودن-گروهی-فیلم.xlsx");
 }
 
-async function handleBulkMovieFile(file) {
+// پارسر ساده‌ی متن جداشده (CSV/TSV) با پشتیبانی از "..." و سلول‌های چندخطی
+// (خلاصه‌داستانی که توش Enter زده شده، توی کپی گوگل شیتس داخل کوتیشن میاد).
+function parseDelimited(text, delim) {
+  const rows = [];
+  let row = [], cell = "", inQuotes = false;
+  text = text.replace(/^\uFEFF/, "");
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { cell += '"'; i++; } else { inQuotes = false; }
+      } else { cell += ch; }
+    } else if (ch === '"' && cell === "") {
+      inQuotes = true;
+    } else if (ch === delim) {
+      row.push(cell); cell = "";
+    } else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); cell = "";
+      rows.push(row); row = [];
+    } else {
+      cell += ch;
+    }
+  }
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+function detectDelimiter(text) {
+  const firstLine = text.replace(/^\uFEFF/, "").split(/\r?\n/)[0] || "";
+  const counts = { "\t": 0, ",": 0, ";": 0 };
+  for (const ch of firstLine) if (ch in counts) counts[ch]++;
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+// ردیف اول = عنوان ستون‌ها (بدون حساسیت به حروف بزرگ/کوچک). اگه ستون title نباشه null برمی‌گردونه.
+function rowsFromMatrix(matrix) {
+  if (!matrix.length) return null;
+  const headers = matrix[0].map(h => {
+    const t = String(h).trim();
+    return BULK_HEADERS.find(k => k.toLowerCase() === t.toLowerCase()) || t;
+  });
+  if (!headers.includes("title")) return null;
+  return matrix.slice(1)
+    .filter(r => r.some(c => String(c).trim() !== ""))
+    .map(r => Object.fromEntries(headers.map((h, i) => [h, r[i] ?? ""])));
+}
+
+const BULK_FORMAT_ERROR = "ردیف اول باید عنوان ستون‌ها باشه (title, cast, genre, ...) — مثل قالب نمونه.";
+
+async function importMovieRows(rows, btn) {
   const statusEl = document.getElementById("bulkImportStatus");
+  let success = 0, failed = 0;
+  const errors = [];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    statusEl.textContent = `در حال پردازش ردیف ${i + 1} از ${rows.length}...`;
+    const title = String(row.title || "").trim();
+    if (!title) { failed++; errors.push(`ردیف ${i + 2}: ستون title خالیه`); continue; }
+    try {
+      const categoryIds = row.genre ? await resolveNamesToGenreIds(row.genre) : [];
+      const castIds = row.cast ? await resolveNamesToActorIds(row.cast) : [];
+      const downloadLinks = [];
+      if (String(row.downloadUrl || "").trim()) {
+        downloadLinks.push({
+          label: String(row.downloadLabel || "لینک دانلود").trim(),
+          url: String(row.downloadUrl).trim(),
+          size: String(row.downloadSize || "").trim()
+        });
+      }
+      await addDoc(collection(db, "movies"), {
+        type: String(row.type || "movie").trim().toLowerCase() === "series" ? "series" : "movie",
+        active: String(row.active ?? "true").trim().toLowerCase() !== "false",
+        title,
+        originalTitle: String(row.originalTitle || "").trim(),
+        genre: String(row.genre || "").trim(),
+        categoryIds,
+        year: String(row.year || "").trim(),
+        runtime: toNumOrNull(row.runtime),
+        rating: toNumOrNull(row.rating),
+        votes: toNumOrNull(row.votes),
+        popularity: toNumOrNull(row.popularity),
+        country: String(row.country || "").trim(),
+        language: String(row.language || "").trim(),
+        director: String(row.director || "").trim(),
+        castIds,
+        synopsis: String(row.synopsis || "").trim(),
+        posterUrl: String(row.posterUrl || "").trim(),
+        backdropUrl: String(row.backdropUrl || "").trim(),
+        backdropPosition: "",
+        trailerUrl: String(row.trailerUrl || "").trim(),
+        downloadLinks,
+        createdAt: serverTimestamp()
+      });
+      success++;
+    } catch (e) {
+      console.error("bulk row failed", e);
+      failed++;
+      errors.push(`ردیف ${i + 2} (${title}): خطا در ذخیره`);
+    }
+  }
+
+  statusEl.innerHTML = `تمام شد — ${success} فیلم اضافه شد${failed ? `، ${failed} ردیف با خطا مواجه شد` : ""}.` +
+    (errors.length ? `<br><span style="color:#ff6b6b;">${errors.slice(0, 10).map(escapeHTML).join("<br>")}</span>` : "");
+  if (success) {
+    document.getElementById("bulkMovieFile").value = "";
+    document.getElementById("bulkPasteInput").value = "";
+    await loadMovies();
+    showToast(`${success} فیلم با موفقیت اضافه شد`);
+  }
+}
+
+async function handleBulkMovieFile(file) {
   const btn = document.getElementById("bulkMovieImportBtn");
   setButtonLoading(btn, true, "در حال خواندن فایل...");
   try {
-    const isCsv = /\.csv$/i.test(file.name);
-    // CSV رو صراحتاً به‌صورت متن UTF-8 می‌خونیم تا فارسی خراب نشه؛ xlsx/xls
-    // فرمت باینریه و خودش یونیکد رو نگه می‌داره، پس مشکل انکدینگ نداره.
-    const wb = isCsv
-      ? XLSX.read(await file.text(), { type: "string" })
-      : XLSX.read(await file.arrayBuffer(), { type: "array" });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-    if (!rows.length) {
-      setStatus("bulkImportStatus", "فایل خالیه یا فرمتش با قالب نمونه فرق داره.", false);
-      return;
-    }
-
-    let success = 0, failed = 0;
-    const errors = [];
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      statusEl.textContent = `در حال پردازش ردیف ${i + 1} از ${rows.length}...`;
-      const title = String(row.title || "").trim();
-      if (!title) { failed++; errors.push(`ردیف ${i + 2}: ستون title خالیه`); continue; }
-      try {
-        const categoryIds = row.genre ? await resolveNamesToGenreIds(row.genre) : [];
-        const castIds = row.cast ? await resolveNamesToActorIds(row.cast) : [];
-        const downloadLinks = [];
-        if (String(row.downloadUrl || "").trim()) {
-          downloadLinks.push({
-            label: String(row.downloadLabel || "لینک دانلود").trim(),
-            url: String(row.downloadUrl).trim(),
-            size: String(row.downloadSize || "").trim()
-          });
-        }
-        await addDoc(collection(db, "movies"), {
-          type: String(row.type || "movie").trim().toLowerCase() === "series" ? "series" : "movie",
-          active: String(row.active ?? "true").trim().toLowerCase() !== "false",
-          title,
-          originalTitle: String(row.originalTitle || "").trim(),
-          genre: String(row.genre || "").trim(),
-          categoryIds,
-          year: String(row.year || "").trim(),
-          runtime: toNumOrNull(row.runtime),
-          rating: toNumOrNull(row.rating),
-          votes: toNumOrNull(row.votes),
-          popularity: toNumOrNull(row.popularity),
-          country: String(row.country || "").trim(),
-          language: String(row.language || "").trim(),
-          director: String(row.director || "").trim(),
-          castIds,
-          synopsis: String(row.synopsis || "").trim(),
-          posterUrl: String(row.posterUrl || "").trim(),
-          backdropUrl: String(row.backdropUrl || "").trim(),
-          backdropPosition: "",
-          trailerUrl: String(row.trailerUrl || "").trim(),
-          downloadLinks,
-          createdAt: serverTimestamp()
-        });
-        success++;
-      } catch (e) {
-        console.error("bulk row failed", e);
-        failed++;
-        errors.push(`ردیف ${i + 2} (${title}): خطا در ذخیره`);
+    let matrix;
+    if (/\.csv$/i.test(file.name)) {
+      // CSV رو خودمون به‌صورت UTF-8 می‌خونیم (خروجی CSV گوگل شیتس UTF-8ـه).
+      const text = await file.text();
+      matrix = parseDelimited(text, detectDelimiter(text));
+    } else {
+      if (typeof XLSX === "undefined") {
+        setStatus("bulkImportStatus", "کتابخانه‌ی اکسل لود نشد — فایل رو CSV کن یا از کادر چسباندن استفاده کن.", false);
+        return;
       }
+      const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      matrix = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
     }
-
-    statusEl.innerHTML = `تمام شد — ${success} فیلم اضافه شد${failed ? `، ${failed} ردیف با خطا مواجه شد` : ""}.` +
-      (errors.length ? `<br><span style="color:#ff6b6b;">${errors.slice(0, 10).map(escapeHTML).join("<br>")}</span>` : "");
-    document.getElementById("bulkMovieFile").value = "";
-    await loadMovies();
-    if (success) showToast(`${success} فیلم با موفقیت اضافه شد`);
+    const rows = rowsFromMatrix(matrix);
+    if (!rows) { setStatus("bulkImportStatus", BULK_FORMAT_ERROR, false); return; }
+    if (!rows.length) { setStatus("bulkImportStatus", "هیچ ردیف داده‌ای زیر عنوان ستون‌ها پیدا نشد.", false); return; }
+    await importMovieRows(rows, btn);
   } catch (e) {
     console.error("bulk import failed", e);
-    setStatus("bulkImportStatus", "خطا در خواندن فایل — مطمئن شو فرمتش xlsx یا csv باشه و مثل قالب نمونه‌ست.", false);
+    setStatus("bulkImportStatus", "خطا در خواندن فایل — مطمئن شو مثل قالب نمونه‌ست.", false);
+  } finally {
+    setButtonLoading(btn, false);
+  }
+}
+
+async function handleBulkPaste() {
+  const text = document.getElementById("bulkPasteInput").value;
+  if (!text.trim()) { setStatus("bulkImportStatus", "اول سلول‌های کپی‌شده از گوگل شیتس رو توی کادر بچسبون.", false); return; }
+  const btn = document.getElementById("bulkPasteImportBtn");
+  setButtonLoading(btn, true, "در حال پردازش...");
+  try {
+    const rows = rowsFromMatrix(parseDelimited(text, detectDelimiter(text)));
+    if (!rows) { setStatus("bulkImportStatus", BULK_FORMAT_ERROR, false); return; }
+    if (!rows.length) { setStatus("bulkImportStatus", "هیچ ردیف داده‌ای زیر عنوان ستون‌ها پیدا نشد.", false); return; }
+    await importMovieRows(rows, btn);
+  } catch (e) {
+    console.error("bulk paste failed", e);
+    setStatus("bulkImportStatus", "خطا در پردازش متن چسبانده‌شده.", false);
   } finally {
     setButtonLoading(btn, false);
   }
