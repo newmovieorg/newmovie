@@ -236,32 +236,158 @@ watchVisitor(async (user) => {
 });
 
 
+```js
 const NEW_BADGE_DAYS = 7;
 
 export function movieCardHTML(m) {
   const typeLabel = m.type === "series" ? "سریال" : "فیلم";
   const title = escapeHTML(m.title);
   const posterUrl = escapeHTML(m.posterUrl || "");
-  const posterClass = posterUrl ? "card-poster" : "card-poster poster-missing";
-  const categoryNames = Array.isArray(m.categoryNames) ? m.categoryNames.filter(Boolean) : [];
-  const metaLabel = categoryNames.length ? categoryNames.join("، ") : (m.genre || "");
+  const posterClass = posterUrl
+    ? "card-poster"
+    : "card-poster poster-missing";
+
+  const categoryNames = Array.isArray(m.categoryNames)
+    ? m.categoryNames.filter(Boolean)
+    : [];
+
+  const metaLabel = categoryNames.length
+    ? categoryNames.join("، ")
+    : (m.genre || "");
+
   const createdSeconds = m.createdAt?.seconds;
-  const isNew = createdSeconds && (Date.now() / 1000 - createdSeconds) < NEW_BADGE_DAYS * 86400;
+  const ageSeconds = createdSeconds
+    ? (Date.now() / 1000) - createdSeconds
+    : Infinity;
+
+  const isNew =
+    ageSeconds >= 0 &&
+    ageSeconds < NEW_BADGE_DAYS * 86400;
+
   return `
+    <style>
+      .card-new-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 5;
+
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        padding: 6px 11px;
+        border-radius: 999px;
+
+        background: rgba(255, 255, 255, 0.94);
+        color: #000;
+
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.9px;
+        line-height: 1;
+
+        box-shadow:
+          0 6px 20px rgba(0, 0, 0, 0.38),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+
+        animation: newBadgeFloat 2.2s ease-in-out infinite;
+        transform-origin: center;
+      }
+
+      .new-badge-dot {
+        width: 6px;
+        height: 6px;
+        flex: 0 0 6px;
+
+        border-radius: 50%;
+        background: #000;
+
+        animation: newBadgePulse 1.6s ease-out infinite;
+      }
+
+      @keyframes newBadgeFloat {
+        0%, 100% {
+          transform: translateY(0);
+        }
+
+        50% {
+          transform: translateY(-2px);
+        }
+      }
+
+      @keyframes newBadgePulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.35);
+        }
+
+        70% {
+          box-shadow: 0 0 0 6px rgba(0, 0, 0, 0);
+        }
+
+        100% {
+          box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .card-new-badge,
+        .new-badge-dot {
+          animation: none;
+        }
+      }
+    </style>
+
     <a class="card" href="movie.html?id=${m.id}">
       <div class="${posterClass}">
-        ${posterUrl ? `<img class="card-poster-img" src="${posterUrl}" alt="${title}" loading="lazy" decoding="async" onerror="this.hidden=true;this.parentElement.classList.add('poster-missing')">` : ""}
-        ${m.rating ? `<span class="card-rating">${STAR_FILLED}${m.rating}</span>` : ""}
+
+        ${
+          posterUrl
+            ? `<img
+                class="card-poster-img"
+                src="${posterUrl}"
+                alt="${title}"
+                loading="lazy"
+                decoding="async"
+                onerror="this.hidden=true;this.parentElement.classList.add('poster-missing')"
+              >`
+            : ""
+        }
+
+        ${
+          m.rating
+            ? `<span class="card-rating">${STAR_FILLED}${m.rating}</span>`
+            : ""
+        }
+
         <span class="card-type-badge">${typeLabel}</span>
-        ${isNew ? `<span class="card-new-badge">جدید</span>` : ""}
+
+        ${
+          isNew
+            ? `<span class="card-new-badge" aria-label="عنوان جدید">
+                <span class="new-badge-dot"></span>
+                NEW
+              </span>`
+            : ""
+        }
+
       </div>
+
       <div class="card-body">
         <p class="card-title">${title}</p>
-        <p class="card-meta">${escapeHTML(m.year || "")}${metaLabel ? " · " + escapeHTML(metaLabel) : ""}</p>
+
+        <p class="card-meta">
+          ${escapeHTML(m.year || "")}
+          ${metaLabel ? " · " + escapeHTML(metaLabel) : ""}
+        </p>
       </div>
     </a>
   `;
 }
+```
 
 // حالت خالی یکدست برای همه‌ی جاهایی که یک گرید کامل چیزی برای نشان‌دادن ندارد
 // (فیلتر بی‌نتیجه، علاقه‌مندی‌های خالی و...) — به‌جای یک خط متن ساده.
