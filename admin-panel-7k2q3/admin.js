@@ -165,6 +165,12 @@ async function initDashboard() {
   document.getElementById("cancelActorEditBtn").addEventListener("click", resetActorForm);
   document.getElementById("mCastSearch").addEventListener("input", () => renderCastPicker(getSelectedCastIds()));
   document.getElementById("mCastBulkBtn").addEventListener("click", applyCastBulkInput);
+  document.getElementById("bulkTemplateBtn").addEventListener("click", downloadBulkTemplate);
+  document.getElementById("bulkMovieImportBtn").addEventListener("click", () => {
+    const file = document.getElementById("bulkMovieFile").files[0];
+    if (!file) { setStatus("bulkImportStatus", "اول یه فایل انتخاب کن.", false); return; }
+    handleBulkMovieFile(file);
+  });
   document.getElementById("saveSettingsBtn").addEventListener("click", saveSiteSettings);
   document.getElementById("notifSendBtn").addEventListener("click", sendNotificationToAllUsers);
   refreshTokenCount();
@@ -392,32 +398,60 @@ function setSelectedCastIds(ids) {
 // از یه رشته‌ی "Jackie Chan, Ma Li, ..." هر اسم رو یا با بازیگر موجود (تطبیق
 // دقیق نام، بدون حساسیت به حروف بزرگ/کوچک) یکی می‌کنه، یا اگه نبود، یک بازیگر
 // تازه فقط با همون اسم (بدون عکس) می‌سازه — نتیجه هم توی تیک‌های پایین اعمال می‌شه.
+// از یه رشته‌ی "Jackie Chan, Ma Li, ..." هر اسم رو یا با بازیگر موجود (تطبیق
+// دقیق نام، بدون حساسیت به حروف بزرگ/کوچک) یکی می‌کنه، یا اگه نبود، یک بازیگر
+// تازه فقط با همون اسم (بدون عکس) می‌سازه. هم افزودن سریع توی فرم تکی، هم
+// افزودن گروهی از فایل اکسل/CSV از همین تابع استفاده می‌کنن.
+async function resolveNamesToActorIds(namesStr) {
+  const names = String(namesStr || "").split(",").map(s => s.trim()).filter(Boolean);
+  const ids = [];
+  for (const name of names) {
+    const existing = allActorsCache.find(a => (a.name || "").trim().toLocaleLowerCase() === name.toLocaleLowerCase());
+    if (existing) {
+      ids.push(existing.id);
+    } else {
+      const ref = await addDoc(collection(db, "actors"), { name, photoUrl: "", featured: false, createdAt: serverTimestamp() });
+      allActorsCache.push({ id: ref.id, name, photoUrl: "", featured: false });
+      ids.push(ref.id);
+    }
+  }
+  return ids;
+}
+
+// همون منطق برای دسته‌بندی‌ها (ژانرها) — برای ستون "genre" فایل اکسل/CSV.
+async function resolveNamesToGenreIds(namesStr) {
+  const names = String(namesStr || "").split(/[,،]/).map(s => s.trim()).filter(Boolean);
+  const ids = [];
+  for (const name of names) {
+    const normalized = name.replace(/\s+/g, " ").toLocaleLowerCase("fa");
+    const existing = allGenresCache.find(g => String(g.name || "").replace(/\s+/g, " ").toLocaleLowerCase("fa") === normalized);
+    if (existing) {
+      ids.push(existing.id);
+    } else {
+      const ref = await addDoc(collection(db, "genres"), { name });
+      allGenresCache.push({ id: ref.id, name });
+      ids.push(ref.id);
+    }
+  }
+  return ids;
+}
+
 async function applyCastBulkInput() {
   const raw = document.getElementById("mCastBulkInput").value;
-  const names = raw.split(",").map(s => s.trim()).filter(Boolean);
-  if (!names.length) return;
+  if (!raw.trim()) return;
 
   const btn = document.getElementById("mCastBulkBtn");
   setButtonLoading(btn, true);
   try {
-    const selected = new Set(getSelectedCastIds());
-    let createdCount = 0;
-    for (const name of names) {
-      const existing = allActorsCache.find(a => (a.name || "").trim().toLocaleLowerCase() === name.toLocaleLowerCase());
-      if (existing) {
-        selected.add(existing.id);
-      } else {
-        const ref = await addDoc(collection(db, "actors"), { name, photoUrl: "", featured: false, createdAt: serverTimestamp() });
-        allActorsCache.push({ id: ref.id, name, photoUrl: "", featured: false });
-        selected.add(ref.id);
-        createdCount++;
-      }
-    }
+    const beforeCount = allActorsCache.length;
+    const newIds = await resolveNamesToActorIds(raw);
+    const selected = new Set([...getSelectedCastIds(), ...newIds]);
     allActorsCache.sort((a, b) => (a.name || "").localeCompare(b.name || "", "fa"));
     document.getElementById("mCastSearch").value = "";
     renderCastPicker([...selected]);
     document.getElementById("mCastBulkInput").value = "";
-    showToast(createdCount ? `${names.length} بازیگر اعمال شد (${createdCount} تای جدید ساخته شد)` : `${names.length} بازیگر اعمال شد`);
+    const createdCount = allActorsCache.length - beforeCount;
+    showToast(createdCount ? `${newIds.length} بازیگر اعمال شد (${createdCount} تای جدید ساخته شد)` : `${newIds.length} بازیگر اعمال شد`);
   } catch (e) {
     console.error("bulk cast apply failed", e);
     showToast("خطا در پردازش لیست بازیگران", "err");
@@ -744,6 +778,108 @@ async function loadAnalytics() {
         <span class="${pv.uid ? "badge-featured" : "badge-guest"}">${pv.uid ? "ثبت‌نام‌کرده" : "مهمان"}</span>
       </div>`).join("")
     : `<p class="empty-note">هنوز بازدیدی ثبت نشده.</p>`;
+}
+
+// ---------- Bulk movie import (Excel/CSV) ----------
+
+function downloadBulkTemplate() {
+  const headers = ["title","originalTitle","type","genre","cast","year","runtime","rating","votes",
+    "popularity","country","language","director","synopsis","posterUrl","backdropUrl","trailerUrl",
+    "downloadLabel","downloadUrl","downloadSize","active"];
+  const example = {
+    title: "نمونه فیلم", originalTitle: "Example Movie", type: "movie", genre: "درام، معمایی",
+    cast: "Jackie Chan, Ma Li", year: "2026", runtime: "120", rating: "7.5", votes: "1200",
+    popularity: "50", country: "آمریکا", language: "انگلیسی", director: "اسم کارگردان",
+    synopsis: "خلاصه‌ی داستان فیلم اینجا نوشته می‌شه.", posterUrl: "https://example.com/poster.jpg",
+    backdropUrl: "https://example.com/backdrop.jpg", trailerUrl: "https://youtu.be/xxxxxxxxxxx",
+    downloadLabel: "کیفیت 1080p", downloadUrl: "https://example.com/dl.mp4", downloadSize: "2.1 گیگابایت",
+    active: "true"
+  };
+  const ws = XLSX.utils.json_to_sheet([example], { header: headers });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Movies");
+  XLSX.writeFile(wb, "قالب-افزودن-گروهی-فیلم.xlsx");
+}
+
+async function handleBulkMovieFile(file) {
+  const statusEl = document.getElementById("bulkImportStatus");
+  const btn = document.getElementById("bulkMovieImportBtn");
+  setButtonLoading(btn, true, "در حال خواندن فایل...");
+  try {
+    const isCsv = /\.csv$/i.test(file.name);
+    // CSV رو صراحتاً به‌صورت متن UTF-8 می‌خونیم تا فارسی خراب نشه؛ xlsx/xls
+    // فرمت باینریه و خودش یونیکد رو نگه می‌داره، پس مشکل انکدینگ نداره.
+    const wb = isCsv
+      ? XLSX.read(await file.text(), { type: "string" })
+      : XLSX.read(await file.arrayBuffer(), { type: "array" });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    if (!rows.length) {
+      setStatus("bulkImportStatus", "فایل خالیه یا فرمتش با قالب نمونه فرق داره.", false);
+      return;
+    }
+
+    let success = 0, failed = 0;
+    const errors = [];
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      statusEl.textContent = `در حال پردازش ردیف ${i + 1} از ${rows.length}...`;
+      const title = String(row.title || "").trim();
+      if (!title) { failed++; errors.push(`ردیف ${i + 2}: ستون title خالیه`); continue; }
+      try {
+        const categoryIds = row.genre ? await resolveNamesToGenreIds(row.genre) : [];
+        const castIds = row.cast ? await resolveNamesToActorIds(row.cast) : [];
+        const downloadLinks = [];
+        if (String(row.downloadUrl || "").trim()) {
+          downloadLinks.push({
+            label: String(row.downloadLabel || "لینک دانلود").trim(),
+            url: String(row.downloadUrl).trim(),
+            size: String(row.downloadSize || "").trim()
+          });
+        }
+        await addDoc(collection(db, "movies"), {
+          type: String(row.type || "movie").trim().toLowerCase() === "series" ? "series" : "movie",
+          active: String(row.active ?? "true").trim().toLowerCase() !== "false",
+          title,
+          originalTitle: String(row.originalTitle || "").trim(),
+          genre: String(row.genre || "").trim(),
+          categoryIds,
+          year: String(row.year || "").trim(),
+          runtime: toNumOrNull(row.runtime),
+          rating: toNumOrNull(row.rating),
+          votes: toNumOrNull(row.votes),
+          popularity: toNumOrNull(row.popularity),
+          country: String(row.country || "").trim(),
+          language: String(row.language || "").trim(),
+          director: String(row.director || "").trim(),
+          castIds,
+          synopsis: String(row.synopsis || "").trim(),
+          posterUrl: String(row.posterUrl || "").trim(),
+          backdropUrl: String(row.backdropUrl || "").trim(),
+          backdropPosition: "",
+          trailerUrl: String(row.trailerUrl || "").trim(),
+          downloadLinks,
+          createdAt: serverTimestamp()
+        });
+        success++;
+      } catch (e) {
+        console.error("bulk row failed", e);
+        failed++;
+        errors.push(`ردیف ${i + 2} (${title}): خطا در ذخیره`);
+      }
+    }
+
+    statusEl.innerHTML = `تمام شد — ${success} فیلم اضافه شد${failed ? `، ${failed} ردیف با خطا مواجه شد` : ""}.` +
+      (errors.length ? `<br><span style="color:#ff6b6b;">${errors.slice(0, 10).map(escapeHTML).join("<br>")}</span>` : "");
+    document.getElementById("bulkMovieFile").value = "";
+    await loadMovies();
+    if (success) showToast(`${success} فیلم با موفقیت اضافه شد`);
+  } catch (e) {
+    console.error("bulk import failed", e);
+    setStatus("bulkImportStatus", "خطا در خواندن فایل — مطمئن شو فرمتش xlsx یا csv باشه و مثل قالب نمونه‌ست.", false);
+  } finally {
+    setButtonLoading(btn, false);
+  }
 }
 
 // ---------- Movies / Series ----------
