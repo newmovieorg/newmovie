@@ -12,6 +12,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
 <link rel="stylesheet" href="../style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="admin-body">
 
@@ -70,6 +71,18 @@
 
   <!-- Content: movies + series -->
   <div class="admin-view" id="view-content">
+    <div class="admin-panel">
+      <h2>افزودن گروهی از فایل اکسل/CSV</h2>
+      <p class="admin-help">فایل رو با همون فرمت قالب نمونه پر کن؛ ستون‌های «genre» و «cast» رو با کاما جدا کن — هرکدوم قبلاً توی سایت نباشه، خودکار ساخته می‌شه (دقیقاً مثل افزودن سریع بازیگر توی فرم پایین). <strong>پیشنهاد:</strong> فایل رو به‌صورت xlsx ذخیره کن؛ اگه CSV می‌خوای، حتماً «CSV UTF-8» انتخاب کن وگرنه حروف فارسی خراب می‌شن.</p>
+      <button type="button" class="btn-small" id="bulkTemplateBtn">دانلود قالب نمونه (Excel)</button>
+      <div class="field" style="margin-top:14px;">
+        <label>فایل xlsx یا csv</label>
+        <input type="file" id="bulkMovieFile" accept=".xlsx,.xls,.csv">
+      </div>
+      <button class="btn btn-primary" id="bulkMovieImportBtn">شروع افزودن گروهی</button>
+      <p class="status-msg" id="bulkImportStatus"></p>
+    </div>
+
     <div class="admin-panel">
       <h2 id="movieFormTitle">افزودن فیلم/سریال جدید</h2>
       <input type="hidden" id="movieId">
