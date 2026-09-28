@@ -253,7 +253,7 @@ export function movieCardHTML(m) {
         ${posterUrl ? `<img class="card-poster-img" src="${posterUrl}" alt="${title}" loading="lazy" decoding="async" onerror="this.hidden=true;this.parentElement.classList.add('poster-missing')">` : ""}
         ${m.rating ? `<span class="card-rating">${STAR_FILLED}${m.rating}</span>` : ""}
         <span class="card-type-badge">${typeLabel}</span>
-        ${isNew ? `<span class="card-new-badge">جدید</span>` : ""}
+        ${isNew ? `<span class="card-new-badge">NEW</span>` : ""}
       </div>
       <div class="card-body">
         <p class="card-title">${title}</p>
