@@ -72,14 +72,25 @@
   <!-- Content: movies + series -->
   <div class="admin-view" id="view-content">
     <div class="admin-panel">
-      <h2>افزودن گروهی از فایل اکسل/CSV</h2>
-      <p class="admin-help">فایل رو با همون فرمت قالب نمونه پر کن؛ ستون‌های «genre» و «cast» رو با کاما جدا کن — هرکدوم قبلاً توی سایت نباشه، خودکار ساخته می‌شه (دقیقاً مثل افزودن سریع بازیگر توی فرم پایین). <strong>پیشنهاد:</strong> فایل رو به‌صورت xlsx ذخیره کن؛ اگه CSV می‌خوای، حتماً «CSV UTF-8» انتخاب کن وگرنه حروف فارسی خراب می‌شن.</p>
-      <button type="button" class="btn-small" id="bulkTemplateBtn">دانلود قالب نمونه (Excel)</button>
-      <div class="field" style="margin-top:14px;">
-        <label>فایل xlsx یا csv</label>
+      <h2>افزودن گروهی (Google Sheets / اکسل / CSV)</h2>
+      <p class="admin-help">اکسل لازم نیست — با <strong>Google Sheets</strong> هم کار می‌کنه:<br>
+        ۱) «دانلود قالب CSV» رو بزن، بعد توی Google Sheets: <em>File ← Import ← Upload</em> و فایل رو انتخاب کن.<br>
+        ۲) ردیف‌های فیلم‌ها رو زیر ردیف نمونه پر کن (ستون‌های <code>genre</code> و <code>cast</code> با کاما؛ هرکدوم توی سایت نباشه خودکار ساخته می‌شه).<br>
+        ۳) <strong>ساده‌ترین راه:</strong> همه‌ی سلول‌ها رو (با ردیف عنوان‌ها) انتخاب و کپی کن (Ctrl+A، Ctrl+C) و توی کادر پایین بچسبون. یا از <em>File ← Download ← CSV</em> فایل بگیر و آپلود کن (خروجی گوگل شیتس UTF-8ـه و فارسی خراب نمی‌شه).</p>
+      <button type="button" class="btn-small" id="bulkTemplateCsvBtn">دانلود قالب CSV (برای Google Sheets)</button>
+      <button type="button" class="btn-small" id="bulkTemplateBtn">قالب Excel (اختیاری)</button>
+
+      <div class="field" style="margin-top:16px;">
+        <label>روش ۱ — چسباندن مستقیم از Google Sheets</label>
+        <textarea id="bulkPasteInput" rows="5" placeholder="سلول‌های کپی‌شده از Google Sheets رو اینجا Paste کن (ردیف اول باید عنوان ستون‌ها باشه)"></textarea>
+      </div>
+      <button class="btn btn-primary" id="bulkPasteImportBtn">افزودن از متن چسبانده‌شده</button>
+
+      <div class="field" style="margin-top:20px;">
+        <label>روش ۲ — آپلود فایل (csv یا xlsx)</label>
         <input type="file" id="bulkMovieFile" accept=".xlsx,.xls,.csv">
       </div>
-      <button class="btn btn-primary" id="bulkMovieImportBtn">شروع افزودن گروهی</button>
+      <button class="btn btn-primary" id="bulkMovieImportBtn">شروع افزودن از فایل</button>
       <p class="status-msg" id="bulkImportStatus"></p>
     </div>
 
