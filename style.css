@@ -673,6 +673,9 @@ body { animation: pageFadeIn .35s ease; }
 .skel-hero { position: absolute; inset: 0; border-radius: 0; }
 .skel-line { height: 14px; border-radius: 6px; margin-bottom: 8px; }
 .skel-line.w60 { width: 60%; } .skel-line.w40 { width: 40%; } .skel-line.w80 { width: 80%; }
+.skel-avatar { width: 76px; height: 76px; border-radius: 50%; margin: 0 auto 8px; }
+.skel-avatar-lg { width: 110px; height: 110px; border-radius: 50%; }
+.skel-poster { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; z-index: 2; }
 
 /* ================= Filters bar (movies/series pages) ================= */
 
