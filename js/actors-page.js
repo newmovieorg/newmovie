@@ -1,12 +1,13 @@
 import { watchActors } from "./data.js";
-import { emptyStateHTML, escapeHTML, PERSON_ICON } from "./ui.js";
+import { emptyStateHTML, escapeHTML, PERSON_ICON, skeletonActors } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 
 renderChrome();
 
 const grid = document.getElementById("actorGrid");
 const searchInput = document.getElementById("actorSearchInput");
-let allActors = [];
+grid.innerHTML = skeletonActors(12);
+let allActors = null; // null = هنوز جواب اول از فایراستور نرسیده (فرق داره با آرایه‌ی خالی یعنی واقعاً بازیگری نیست)
 
 function actorCardHTML(a) {
   return `
@@ -19,6 +20,7 @@ function actorCardHTML(a) {
 }
 
 function render() {
+  if (allActors === null) return; // اسکلتون همین‌طوری می‌مونه تا جواب اول برسه
   const term = (searchInput.value || "").trim().toLocaleLowerCase("fa");
   const list = term ? allActors.filter(a => (a.name || "").toLocaleLowerCase("fa").includes(term)) : allActors;
   grid.innerHTML = list.length
