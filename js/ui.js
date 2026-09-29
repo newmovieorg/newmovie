@@ -93,6 +93,15 @@ export function skeletonHero() {
   return `<div class="skel skel-hero"></div>`;
 }
 
+export function skeletonActors(n = 8) {
+  return Array.from({ length: n }).map(() => `
+    <div class="actor-card">
+      <div class="skel skel-avatar"></div>
+      <div class="skel skel-line w60" style="margin:0 auto;"></div>
+    </div>
+  `).join("");
+}
+
 const FAV_KEY = "newmovie_favorites";
 
 export function getFavorites() {
@@ -236,7 +245,7 @@ watchVisitor(async (user) => {
 });
 
 
-const NEW_BADGE_DAYS = 3;
+const NEW_BADGE_DAYS = 7;
 
 export function movieCardHTML(m) {
   const typeLabel = m.type === "series" ? "سریال" : "فیلم";
@@ -253,7 +262,7 @@ export function movieCardHTML(m) {
         ${posterUrl ? `<img class="card-poster-img" src="${posterUrl}" alt="${title}" loading="lazy" decoding="async" onerror="this.hidden=true;this.parentElement.classList.add('poster-missing')">` : ""}
         ${m.rating ? `<span class="card-rating">${STAR_FILLED}${m.rating}</span>` : ""}
         <span class="card-type-badge">${typeLabel}</span>
-        ${isNew ? `<span class="card-new-badge">NEW</span>` : ""}
+        ${isNew ? `<span class="card-new-badge">جدید</span>` : ""}
       </div>
       <div class="card-body">
         <p class="card-title">${title}</p>
