@@ -216,6 +216,7 @@ function render(m, allMovies, categories, actors) {
   };
   posterEl.src = m.posterUrl || "about:blank";
   posterEl.alt = m.title || "";
+  document.getElementById("detailPosterSkel")?.remove();
   document.getElementById("detailTitle").textContent = m.title || "";
   document.getElementById("detailBreadcrumb").textContent = m.title || "جزئیات عنوان";
 
