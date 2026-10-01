@@ -141,7 +141,7 @@ async function initDashboard() {
   });
 
   const loaders = [
-    ["ژانرها", loadGenres], ["بازیگران", loadActors], ["فیلم‌ها", loadMovies], ["هیروها", loadHeroes],
+    ["ژانرها", loadGenres], ["بازیگران", loadActors], ["فیلم‌ها", loadMovies], ["هیروها", loadHeroes], ["تبلیغات", loadAds],
     ["نظرات/سوالات", loadFeedback], ["بازدیدکنندگان", loadVisitors], ["IPهای مسدود", loadBlockedIps],
     ["تنظیمات سایت", loadSiteSettings], ["آمار و نمودارها", loadAnalytics],
   ];
@@ -159,10 +159,13 @@ async function initDashboard() {
   document.getElementById("cancelEditBtn").addEventListener("click", resetMovieForm);
   document.getElementById("saveHeroBtn").addEventListener("click", saveHero);
   document.getElementById("cancelHeroEditBtn").addEventListener("click", resetHeroForm);
+  document.getElementById("saveAdBtn").addEventListener("click", saveAd);
+  document.getElementById("cancelAdEditBtn").addEventListener("click", resetAdForm);
   document.getElementById("saveGenreBtn").addEventListener("click", saveGenre);
   document.getElementById("cancelGenreEditBtn").addEventListener("click", resetGenreForm);
   document.getElementById("saveActorBtn").addEventListener("click", saveActor);
   document.getElementById("cancelActorEditBtn").addEventListener("click", resetActorForm);
+  document.getElementById("actorBulkBtn").addEventListener("click", bulkAddActors);
   document.getElementById("mCastSearch").addEventListener("input", () => renderCastPicker(getSelectedCastIds()));
   document.getElementById("mCastBulkBtn").addEventListener("click", applyCastBulkInput);
   document.getElementById("bulkTemplateBtn").addEventListener("click", downloadBulkTemplate);
@@ -323,7 +326,7 @@ async function loadActors() {
     ? allActorsCache.map(a => `
       <div class="admin-list-item" data-id="${a.id}">
         <span class="admin-actor-thumb">${a.photoUrl ? `<img src="${a.photoUrl}" alt="" onerror="this.remove()">` : PERSON_ICON}</span>
-        <div class="info"><strong>${a.name || "(بدون نام)"}</strong>${a.featured ? ` <span class="badge-featured">ویژه · صفحه اصلی</span>` : ""}</div>
+        <div class="info"><strong>${a.name || "(بدون نام)"}</strong>${a.featured ? ` <span class="badge-featured">نمایش عمومی</span>` : ""}</div>
         <div class="actions"><button class="btn-small edit-actor-btn">ویرایش</button><button class="btn-small danger delete-actor-btn">حذف</button></div>
       </div>`).join("")
     : `<p class="empty-note">هنوز بازیگری اضافه نشده.</p>`;
@@ -462,6 +465,42 @@ async function applyCastBulkInput() {
   }
 }
 
+// دکمه‌ی «افزودن گروهی» توی تب بازیگران — برخلاف applyCastBulkInput (که برای
+// انتخاب کست یه فیلمه)، این یکی مستقیماً توی لیست اصلی بازیگرها می‌سازه/آپدیت
+// می‌کنه، بدون اینکه به هیچ فیلمی وصل باشه.
+async function bulkAddActors() {
+  const raw = document.getElementById("actorBulkInput").value;
+  const names = raw.split(",").map(s => s.trim()).filter(Boolean);
+  if (!names.length) { setStatus("actorBulkStatus", "اول چندتا اسم وارد کن.", false); return; }
+  const makeFeatured = document.getElementById("actorBulkFeatured").checked;
+  const btn = document.getElementById("actorBulkBtn");
+  setButtonLoading(btn, true);
+  try {
+    let created = 0, matched = 0;
+    for (const name of names) {
+      const existing = allActorsCache.find(a => (a.name || "").trim().toLocaleLowerCase() === name.toLocaleLowerCase());
+      if (existing) {
+        matched++;
+        if (makeFeatured && !existing.featured) {
+          await updateDoc(doc(db, "actors", existing.id), { featured: true });
+        }
+      } else {
+        await addDoc(collection(db, "actors"), { name, photoUrl: "", featured: makeFeatured, createdAt: serverTimestamp() });
+        created++;
+      }
+    }
+    document.getElementById("actorBulkInput").value = "";
+    document.getElementById("actorBulkFeatured").checked = false;
+    setStatus("actorBulkStatus", `${created} بازیگر جدید ساخته شد${matched ? `، ${matched} تا از قبل توی لیست بودن` : ""}.`);
+    await loadActors();
+  } catch (e) {
+    console.error("bulk actor add failed", e);
+    setStatus("actorBulkStatus", "خطا در افزودن گروهی.", false);
+  } finally {
+    setButtonLoading(btn, false);
+  }
+}
+
 async function saveActor() {
   const name = document.getElementById("actorName").value.trim();
   if (!name) { setStatus("actorStatus", "نام بازیگر را وارد کن.", false); return; }
@@ -518,7 +557,17 @@ const DEFAULT_SETTINGS = {
     { question: "", answer: "" },
     { question: "", answer: "" },
     { question: "", answer: "" }
-  ]
+  ],
+  creatorName: "",
+  creatorRole: "",
+  creatorPhoto: "",
+  creatorBio: "",
+  creatorInstagram: "",
+  creatorTelegram: "",
+  creatorTwitter: "",
+  creatorYoutube: "",
+  creatorLinkedin: "",
+  creatorWebsite: ""
 };
 
 function setValue(id, value) {
@@ -546,6 +595,16 @@ async function loadSiteSettings() {
   setValue("siteContactAddress", settings.contactAddress);
   setValue("siteTelegramUrl", settings.telegramUrl);
   setValue("siteInstagramUrl", settings.instagramUrl);
+  setValue("creatorName", settings.creatorName);
+  setValue("creatorRole", settings.creatorRole);
+  setValue("creatorPhoto", settings.creatorPhoto);
+  setValue("creatorBio", settings.creatorBio);
+  setValue("creatorInstagram", settings.creatorInstagram);
+  setValue("creatorTelegram", settings.creatorTelegram);
+  setValue("creatorTwitter", settings.creatorTwitter);
+  setValue("creatorYoutube", settings.creatorYoutube);
+  setValue("creatorLinkedin", settings.creatorLinkedin);
+  setValue("creatorWebsite", settings.creatorWebsite);
   (settings.faqItems || []).slice(0, 3).forEach((item, index) => {
     setValue(`faq${index + 1}Question`, item.question);
     setValue(`faq${index + 1}Answer`, item.answer);
@@ -571,6 +630,16 @@ async function saveSiteSettings() {
     contactAddress: document.getElementById("siteContactAddress").value.trim(),
     telegramUrl: document.getElementById("siteTelegramUrl").value.trim(),
     instagramUrl: document.getElementById("siteInstagramUrl").value.trim(),
+    creatorName: document.getElementById("creatorName").value.trim(),
+    creatorRole: document.getElementById("creatorRole").value.trim(),
+    creatorPhoto: document.getElementById("creatorPhoto").value.trim(),
+    creatorBio: document.getElementById("creatorBio").value.trim(),
+    creatorInstagram: document.getElementById("creatorInstagram").value.trim(),
+    creatorTelegram: document.getElementById("creatorTelegram").value.trim(),
+    creatorTwitter: document.getElementById("creatorTwitter").value.trim(),
+    creatorYoutube: document.getElementById("creatorYoutube").value.trim(),
+    creatorLinkedin: document.getElementById("creatorLinkedin").value.trim(),
+    creatorWebsite: document.getElementById("creatorWebsite").value.trim(),
     faqItems,
     updatedAt: serverTimestamp()
   };
@@ -1287,6 +1356,112 @@ async function saveHero() {
     await loadHeroes();
   } catch (e) {
     setStatus("heroStatus", "خطا در ذخیره‌سازی.", false);
+  } finally {
+    setButtonLoading(btn, false);
+  }
+}
+
+// ---------- Ads ----------
+
+let editingAdId = null;
+
+async function loadAds() {
+  const snap = await getDocs(collection(db, "ads"));
+  const ads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  const listBox = document.getElementById("adminAdsList");
+  listBox.innerHTML = ads.length ? ads.map(a => `
+    <div class="admin-list-item" data-id="${a.id}">
+      <img src="${a.imageUrl || ""}" alt="" onerror="this.style.visibility='hidden'">
+      <div class="info">
+        <strong>${a.title || "(بدون عنوان)"}</strong>
+        <span>${a.linkUrl || ""}</span>
+      </div>
+      <span class="toggle-badge ${a.active !== false ? "on" : ""}">${a.active !== false ? "فعال" : "غیرفعال"}</span>
+      <div class="actions">
+        <button class="btn-small edit-ad-btn">ویرایش</button>
+        <button class="btn-small danger delete-ad-btn">حذف</button>
+      </div>
+    </div>
+  `).join("") : `<p class="empty-note">هنوز تبلیغی اضافه نشده.</p>`;
+
+  listBox.querySelectorAll(".edit-ad-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.closest(".admin-list-item").dataset.id;
+      fillAdForm(ads.find(a => a.id === id));
+    });
+  });
+  listBox.querySelectorAll(".delete-ad-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.closest(".admin-list-item").dataset.id;
+      if (await confirmModal("این تبلیغ حذف شود؟")) {
+        setButtonLoading(btn, true);
+        try {
+          await deleteDoc(doc(db, "ads", id));
+          showToast("حذف شد");
+          await loadAds();
+        } catch {
+          showToast("خطا در حذف", "err");
+          setButtonLoading(btn, false);
+        }
+      }
+    });
+  });
+}
+
+function fillAdForm(a) {
+  editingAdId = a.id;
+  document.getElementById("adFormTitle").textContent = `ویرایش تبلیغ: ${a.title || ""}`;
+  document.getElementById("adTitle").value = a.title || "";
+  document.getElementById("adImage").value = a.imageUrl || "";
+  document.getElementById("adDescription").value = a.description || "";
+  document.getElementById("adLink").value = a.linkUrl || "";
+  document.getElementById("adActive").value = String(a.active !== false);
+  document.getElementById("cancelAdEditBtn").style.display = "inline-block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetAdForm() {
+  editingAdId = null;
+  document.getElementById("adFormTitle").textContent = "افزودن تبلیغ";
+  ["adTitle", "adImage", "adDescription", "adLink"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("adActive").value = "true";
+  document.getElementById("cancelAdEditBtn").style.display = "none";
+}
+
+async function saveAd() {
+  const title = document.getElementById("adTitle").value.trim();
+  const imageUrl = document.getElementById("adImage").value.trim();
+  const linkUrl = document.getElementById("adLink").value.trim();
+  if (!title || !imageUrl || !linkUrl) {
+    setStatus("adStatus", "عنوان، تصویر و لینک همه الزامی‌ان.", false);
+    return;
+  }
+  const btn = document.getElementById("saveAdBtn");
+  setButtonLoading(btn, true, "در حال ذخیره...");
+
+  const data = {
+    title,
+    imageUrl,
+    description: document.getElementById("adDescription").value.trim(),
+    linkUrl,
+    active: document.getElementById("adActive").value === "true",
+  };
+
+  try {
+    if (editingAdId) {
+      await updateDoc(doc(db, "ads", editingAdId), data);
+    } else {
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(db, "ads"), data);
+    }
+    setStatus("adStatus", "ذخیره شد.");
+    showToast("تبلیغ ذخیره شد");
+    resetAdForm();
+    await loadAds();
+  } catch (e) {
+    console.error("save ad failed", e);
+    setStatus("adStatus", "خطا در ذخیره‌سازی.", false);
   } finally {
     setButtonLoading(btn, false);
   }
