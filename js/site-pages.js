@@ -1,5 +1,6 @@
 import { renderChrome } from "./chrome.js";
 import { loadSiteContent, renderFaqItems, safeUrl } from "./site-content.js";
+import { PERSON_ICON } from "./ui.js";
 
 renderChrome();
 
@@ -47,6 +48,36 @@ function renderContent(content) {
   }
   const faq = document.getElementById("faqList");
   if (faq) faq.innerHTML = renderFaqItems(content.faqItems || []);
+
+  // صفحه‌ی «درباره سازنده»
+  setText("creatorName", content.creatorName || "ناشناس");
+  setText("creatorRole", content.creatorRole);
+  setText("creatorBio", content.creatorBio);
+  const photoBox = document.getElementById("creatorPhoto");
+  if (photoBox) {
+    photoBox.innerHTML = safeUrl(content.creatorPhoto)
+      ? `<img src="${safeUrl(content.creatorPhoto)}" alt="${content.creatorName || ""}" onerror="this.remove()">`
+      : PERSON_ICON;
+  }
+  const socialLinks = [
+    ["creatorInstagramLink", content.creatorInstagram],
+    ["creatorTelegramLink", content.creatorTelegram],
+    ["creatorTwitterLink", content.creatorTwitter],
+    ["creatorYoutubeLink", content.creatorYoutube],
+    ["creatorLinkedinLink", content.creatorLinkedin],
+    ["creatorWebsiteLink", content.creatorWebsite]
+  ];
+  const socialWrap = document.getElementById("creatorSocial");
+  let anySocial = false;
+  socialLinks.forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const url = safeUrl(value);
+    el.href = url || "#";
+    el.hidden = !url;
+    if (url) anySocial = true;
+  });
+  if (socialWrap) socialWrap.hidden = !anySocial;
 }
 
 loadSiteContent().then(renderContent).catch(() => renderContent({}));
