@@ -272,6 +272,47 @@ export function movieCardHTML(m) {
   `;
 }
 
+// یک کارت تبلیغاتی، دقیقاً هم‌اندازه‌ی کارت فیلم (همون کلاس‌ها)، ولی همیشه با
+// برچسب واضح «Ads» — تا هیچ‌وقت شبیه یه فیلم واقعی جا زده نشه.
+function adCardHTML(ad) {
+  const title = escapeHTML(ad.title || "");
+  const imageUrl = escapeHTML(ad.imageUrl || "");
+  const linkUrl = escapeHTML(ad.linkUrl || "#");
+  return `
+    <a class="card ad-card" href="${linkUrl}" target="_blank" rel="noopener sponsored">
+      <div class="card-poster">
+        ${imageUrl ? `<img class="card-poster-img" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async">` : ""}
+        <span class="ads-badge">Ads</span>
+      </div>
+      <div class="card-body">
+        <p class="card-title">${title}</p>
+        <p class="card-meta">${escapeHTML(ad.description || "")}</p>
+      </div>
+    </a>
+  `;
+}
+
+// آرایه‌ی HTML کارت‌های فیلم رو می‌گیره و به‌صورت رندوم (هر ۵ تا ۸ کارت یه‌بار)
+// یه کارت تبلیغاتی بینشون می‌ذاره. اگه تبلیغ فعالی نباشه یا کارت‌ها کم باشن
+// (کمتر از ۴ تا)، دست‌نخورده برمی‌گردونه.
+export function interleaveAds(cardHtmlArray, ads) {
+  const activeAds = Array.isArray(ads) ? ads.filter(a => a.active !== false && a.imageUrl && a.linkUrl) : [];
+  if (!activeAds.length || cardHtmlArray.length < 4) return cardHtmlArray;
+  const result = [];
+  let sinceLastAd = 0;
+  let nextGap = 5 + Math.floor(Math.random() * 4); // 5..8
+  cardHtmlArray.forEach(html => {
+    result.push(html);
+    sinceLastAd++;
+    if (sinceLastAd >= nextGap) {
+      result.push(adCardHTML(activeAds[Math.floor(Math.random() * activeAds.length)]));
+      sinceLastAd = 0;
+      nextGap = 5 + Math.floor(Math.random() * 4);
+    }
+  });
+  return result;
+}
+
 // حالت خالی یکدست برای همه‌ی جاهایی که یک گرید کامل چیزی برای نشان‌دادن ندارد
 // (فیلتر بی‌نتیجه، علاقه‌مندی‌های خالی و...) — به‌جای یک خط متن ساده.
 export function emptyStateHTML(title, subtitle = "") {
