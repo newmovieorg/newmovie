@@ -19,7 +19,9 @@ export const DEFAULT_SITE_CONTENT = {
     { question: "آیا نیو مووی فایل فیلم را میزبانی می‌کند؟", answer: "خیر. نیو مووی یک سایت معرفی و راهنمای محتواست و فایل ویدیویی را روی سایت میزبانی نمی‌کند." },
     { question: "چطور یک عنوان جدید پیشنهاد بدهم؟", answer: "از صفحه تماس با ما، عنوان و اطلاعات پیشنهادی خود را برای ما ارسال کنید." }
   ],
-  lastUpdated: ""
+  lastUpdated: "",
+  creatorName: "", creatorRole: "", creatorPhoto: "", creatorBio: "",
+  creatorInstagram: "", creatorTelegram: "", creatorTwitter: "", creatorYoutube: "", creatorLinkedin: "", creatorWebsite: ""
 };
 
 export async function loadSiteContent() {
