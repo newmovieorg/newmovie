@@ -28,6 +28,7 @@
     <button class="admin-tab" data-tab="heroes">مدیریت هیرو</button>
     <button class="admin-tab" data-tab="genres">ژانرها</button>
     <button class="admin-tab" data-tab="actors">بازیگران</button>
+    <button class="admin-tab" data-tab="ads">تبلیغات</button>
     <button class="admin-tab" data-tab="feedback">نظرات و سوالات</button>
     <button class="admin-tab" data-tab="visitors">بازدیدکنندگان</button>
     <button class="admin-tab" data-tab="settings">تنظیمات سایت</button>
@@ -235,20 +236,28 @@
   <!-- Actors: managed separately so the same actor can be reused across many movies/series -->
   <div class="admin-view" id="view-actors">
     <div class="admin-panel">
+      <h2>افزودن گروهی بازیگر با اسم</h2>
+      <p class="admin-help">چندتا اسم رو با کاما جدا کن (مثل: Jackie Chan, Ma Li, Qiao Shan) — هرکدوم از قبل توی لیست بود نادیده گرفته می‌شه، بقیه فقط با همون اسم (بدون عکس) ساخته می‌شن. بعداً از پایین می‌تونی روی هرکدوم عکس بذاری.</p>
+      <textarea id="actorBulkInput" rows="2" placeholder="مثلاً: Jackie Chan, Ma Li, Qiao Shan"></textarea>
+      <label class="actor-featured-toggle"><input type="checkbox" id="actorBulkFeatured"><span>همه‌ی این‌ها «نمایش عمومی» هم داشته باشن</span></label>
+      <button type="button" class="btn btn-primary" id="actorBulkBtn">افزودن گروهی</button>
+      <p class="status-msg" id="actorBulkStatus"></p>
+    </div>
+    <div class="admin-panel">
       <h2 id="actorFormTitle">افزودن بازیگر</h2>
       <input type="hidden" id="actorId">
       <div class="form-row">
         <div class="field"><label>نام بازیگر</label><input type="text" id="actorName" placeholder="مثلاً: علی نصیریان"></div>
         <div class="field"><label>لینک عکس (دایره‌ای نمایش داده می‌شود)</label><input type="text" id="actorPhoto" placeholder="https://..."></div>
       </div>
-      <label class="actor-featured-toggle"><input type="checkbox" id="actorFeatured"><span>نمایش در صفحه اصلی (بازیگر ویژه)</span></label>
+      <label class="actor-featured-toggle"><input type="checkbox" id="actorFeatured"><span>نمایش عمومی (صفحه اصلی + فهرست کامل بازیگران)</span></label>
       <button class="btn btn-primary" id="saveActorBtn">افزودن بازیگر</button>
       <button class="btn-small" id="cancelActorEditBtn" style="display:none;">انصراف از ویرایش</button>
       <p class="status-msg" id="actorStatus"></p>
     </div>
     <div class="admin-panel">
       <h2>لیست بازیگران</h2>
-      <p class="empty-note" style="padding:0 0 14px;">این‌ها همون بازیگرهایی هستن که موقع افزودن/ویرایش فیلم، از بخش «بازیگران» قابل انتخابن. فقط بازیگرهایی که تیک «نمایش در صفحه اصلی» رو دارن، توی صفحه اصلی سایت هم نشون داده می‌شن.</p>
+      <p class="empty-note" style="padding:0 0 14px;">این‌ها همون بازیگرهایی هستن که موقع افزودن/ویرایش فیلم، از بخش «بازیگران» قابل انتخابن. <strong>هیچ بازیگری خودکار عمومی نمی‌شه</strong> — فقط اونایی که تیک «نمایش عمومی» رو داشته باشن، هم توی صفحه اصلی هم توی فهرست کامل بازیگران (actors.html) نشون داده می‌شن. صفحه‌ی اختصاصی هر بازیگر (با کلیک از توی یه فیلم) همیشه در دسترسه، حتی بدون این تیک.</p>
       <div class="admin-list" id="adminActorList"><p class="empty-note">در حال بارگذاری...</p></div>
     </div>
   </div>
@@ -314,6 +323,28 @@
       </div>
     </div>
     <div class="admin-panel">
+      <h2>درباره سازنده</h2>
+      <p class="admin-help">این اطلاعات در صفحه‌ی «درباره سازنده» (creator.html) نمایش داده می‌شه.</p>
+      <div class="form-row">
+        <div class="field"><label>نام</label><input type="text" id="creatorName" placeholder="مثلاً: علی محمدی"></div>
+        <div class="field"><label>سمت/نقش</label><input type="text" id="creatorRole" placeholder="مثلاً: توسعه‌دهنده و مدیر سایت"></div>
+      </div>
+      <div class="field"><label>لینک عکس (دایره‌ای نمایش داده می‌شه)</label><input type="text" id="creatorPhoto" placeholder="https://..."></div>
+      <div class="field"><label>درباره خودت</label><textarea id="creatorBio" placeholder="چند خط درباره خودت بنویس..."></textarea></div>
+      <div class="form-row">
+        <div class="field"><label>اینستاگرام</label><input type="url" id="creatorInstagram" placeholder="https://instagram.com/..."></div>
+        <div class="field"><label>تلگرام</label><input type="url" id="creatorTelegram" placeholder="https://t.me/..."></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>ایکس/توییتر</label><input type="url" id="creatorTwitter" placeholder="https://x.com/..."></div>
+        <div class="field"><label>یوتیوب</label><input type="url" id="creatorYoutube" placeholder="https://youtube.com/..."></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>لینکدین</label><input type="url" id="creatorLinkedin" placeholder="https://linkedin.com/in/..."></div>
+        <div class="field"><label>وب‌سایت شخصی</label><input type="url" id="creatorWebsite" placeholder="https://..."></div>
+      </div>
+    </div>
+    <div class="admin-panel">
       <h2>پرسش‌های متداول</h2>
       <p class="admin-help">سه پرسش اصلی سایت را از اینجا ویرایش کنید. برای موارد بیشتر بعداً می‌توانیم مدیریت لیستی اضافه کنیم.</p>
       <div class="faq-admin-row"><div class="field"><label>پرسش ۱</label><input type="text" id="faq1Question"></div><div class="field"><label>پاسخ ۱</label><textarea id="faq1Answer"></textarea></div></div>
@@ -321,6 +352,28 @@
       <div class="faq-admin-row"><div class="field"><label>پرسش ۳</label><input type="text" id="faq3Question"></div><div class="field"><label>پاسخ ۳</label><textarea id="faq3Answer"></textarea></div></div>
       <button class="btn btn-primary" id="saveSettingsBtn">ذخیره تنظیمات سایت</button>
       <p class="status-msg" id="settingsStatus"></p>
+    </div>
+  </div>
+
+  <!-- Ads: shown as regular-looking cards (same size as a movie card) scattered
+       randomly inside movie/series grids, always with a visible "Ads" badge. -->
+  <div class="admin-view" id="view-ads">
+    <div class="admin-panel">
+      <h2 id="adFormTitle">افزودن تبلیغ</h2>
+      <input type="hidden" id="adId">
+      <div class="field"><label>عنوان</label><input type="text" id="adTitle" placeholder="عنوانی که روی کارت نشون داده می‌شه"></div>
+      <div class="field"><label>لینک تصویر (اندازه‌ی پوستر فیلم، عمودی)</label><input type="text" id="adImage" placeholder="https://..."></div>
+      <div class="field"><label>توضیحات کوتاه</label><input type="text" id="adDescription" placeholder="یه خط توضیح، جای «سال · ژانر» فیلم‌ها"></div>
+      <div class="field"><label>لینکی که با کلیک باز می‌شه</label><input type="text" id="adLink" placeholder="https://..."></div>
+      <div class="field"><label>وضعیت</label><select id="adActive"><option value="true">فعال</option><option value="false">غیرفعال</option></select></div>
+      <button class="btn btn-primary" id="saveAdBtn">افزودن تبلیغ</button>
+      <button class="btn-small" id="cancelAdEditBtn" style="display:none;">انصراف از ویرایش</button>
+      <p class="status-msg" id="adStatus"></p>
+    </div>
+    <div class="admin-panel">
+      <h2>لیست تبلیغات</h2>
+      <p class="admin-help">هر تبلیغ فعال، هم‌اندازه‌ی کارت فیلم و با برچسب «Ads» به‌صورت رندوم بین فیلم‌های صفحه اصلی، لیست فیلم‌ها/سریال‌ها و صفحه‌ی هر بازیگر نشون داده می‌شه.</p>
+      <div class="admin-list" id="adminAdsList"><p class="empty-note">در حال بارگذاری...</p></div>
     </div>
   </div>
 
