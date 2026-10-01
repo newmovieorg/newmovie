@@ -21,11 +21,14 @@ function actorCardHTML(a) {
 
 function render() {
   if (allActors === null) return; // اسکلتون همین‌طوری می‌مونه تا جواب اول برسه
+  // فقط بازیگرهایی که ادمین صراحتاً «نمایش عمومی» رو براشون فعال کرده — نه هر
+  // بازیگری که فقط برای تگ‌کردن کست یه فیلم (دستی یا با افزودن گروهی) ساخته شده.
+  const publicActors = allActors.filter(a => a.featured);
   const term = (searchInput.value || "").trim().toLocaleLowerCase("fa");
-  const list = term ? allActors.filter(a => (a.name || "").toLocaleLowerCase("fa").includes(term)) : allActors;
+  const list = term ? publicActors.filter(a => (a.name || "").toLocaleLowerCase("fa").includes(term)) : publicActors;
   grid.innerHTML = list.length
     ? list.map(actorCardHTML).join("")
-    : emptyStateHTML(allActors.length ? "بازیگری با این اسم پیدا نشد" : "هنوز بازیگری اضافه نشده");
+    : emptyStateHTML(publicActors.length ? "بازیگری با این اسم پیدا نشد" : "هنوز بازیگری برای نمایش عمومی انتخاب نشده");
 }
 
 searchInput.addEventListener("input", render);
