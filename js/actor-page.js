@@ -1,5 +1,5 @@
-import { watchMovies, watchActors } from "./data.js";
-import { movieCardHTML, skeletonCards, emptyStateHTML, escapeHTML, PERSON_ICON } from "./ui.js";
+import { watchMovies, watchActors, watchAds } from "./data.js";
+import { movieCardHTML, skeletonCards, emptyStateHTML, escapeHTML, PERSON_ICON, interleaveAds } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 
 renderChrome();
@@ -14,7 +14,7 @@ if (!id) {
   document.getElementById("actorProfileName").textContent = "بازیگر پیدا نشد";
   grid.innerHTML = emptyStateHTML("لینک نامعتبر است");
 } else {
-  const state = { movies: null, actors: null };
+  const state = { movies: null, actors: null, ads: [] };
 
   function tryRender() {
     const { movies, actors } = state;
@@ -40,10 +40,11 @@ if (!id) {
       ? `${items.length} عنوان در نیو مووی`
       : "";
     grid.innerHTML = items.length
-      ? items.map(movieCardHTML).join("")
+      ? interleaveAds(items.map(movieCardHTML), state.ads).join("")
       : emptyStateHTML("هنوز فیلم یا سریالی از این بازیگر ثبت نشده");
   }
 
   watchMovies(movies => { state.movies = movies; tryRender(); }, () => { state.movies = []; tryRender(); });
   watchActors(actors => { state.actors = actors; tryRender(); }, () => { state.actors = []; tryRender(); });
+  watchAds(ads => { state.ads = ads; tryRender(); }, () => {});
 }
