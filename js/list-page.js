@@ -1,5 +1,5 @@
-import { watchMovies, watchCategories } from "./data.js";
-import { skeletonCards, movieCardHTML, emptyStateHTML } from "./ui.js";
+import { watchMovies, watchCategories, watchAds } from "./data.js";
+import { skeletonCards, movieCardHTML, emptyStateHTML, interleaveAds } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 
 renderChrome();
@@ -14,7 +14,7 @@ export function initListPage(pageType) {
   const searchInput = document.getElementById("pageSearchInput");
   const loadMoreBtn = document.getElementById("loadMoreBtn");
 
-  const state = { all: null, categories: null };
+  const state = { all: null, categories: null, ads: [] };
   let optionsBuilt = false;
   const pageSize = 18;
   let shown = 0;
@@ -72,7 +72,7 @@ export function initListPage(pageType) {
 
   function renderMore() {
     const chunk = filtered.slice(shown, shown + pageSize);
-    grid.insertAdjacentHTML("beforeend", decorate(chunk).map(movieCardHTML).join(""));
+    grid.insertAdjacentHTML("beforeend", interleaveAds(decorate(chunk).map(movieCardHTML), state.ads).join(""));
     shown += chunk.length;
     loadMoreBtn.style.display = shown < filtered.length ? "inline-flex" : "none";
     if (!filtered.length) grid.innerHTML = emptyStateHTML("چیزی با این فیلتر پیدا نشد", "فیلترها را تغییر بده یا دوباره امتحان کن.");
@@ -92,6 +92,7 @@ export function initListPage(pageType) {
 
   watchMovies(movies => { state.all = movies; tryInit(); }, showError);
   watchCategories(categories => { state.categories = categories; tryInit(); }, showError);
+  watchAds(ads => { state.ads = ads; }, () => {});
 
   loadMoreBtn.addEventListener("click", renderMore);
   [searchInput].forEach(el => el.addEventListener("input", applyFilters));
