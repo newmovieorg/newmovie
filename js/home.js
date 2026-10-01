@@ -1,10 +1,10 @@
-import { watchMovies, watchHeroes, watchCategories, watchActors } from "./data.js";
-import { skeletonCards, movieCardHTML, escapeHTML, PERSON_ICON } from "./ui.js";
+import { watchMovies, watchHeroes, watchCategories, watchActors, watchAds } from "./data.js";
+import { skeletonCards, movieCardHTML, escapeHTML, PERSON_ICON, interleaveAds } from "./ui.js";
 import { renderChrome } from "./chrome.js";
 
 renderChrome();
 
-const state = { movies: null, categories: null };
+const state = { movies: null, categories: null, ads: [] };
 let heroIndex = 0;
 let heroTimer = null;
 
@@ -88,7 +88,7 @@ function renderSection(sectionElId, listElId, list) {
   const el = document.getElementById(listElId);
   if (!list.length) { section.style.display = "none"; return; }
   section.style.display = "";
-  el.innerHTML = list.map(movieCardHTML).join("");
+  el.innerHTML = interleaveAds(list.map(movieCardHTML), state.ads).join("");
 }
 
 function renderSections() {
@@ -120,7 +120,7 @@ function renderSections() {
     return `
       <section class="section">
         <div class="section-head"><h2 class="section-title">${cat.name}</h2></div>
-        <div class="hscroll">${items.map(movieCardHTML).join("")}</div>
+        <div class="hscroll">${interleaveAds(items.map(movieCardHTML), state.ads).join("")}</div>
       </section>`;
   }).join("");
 
@@ -148,6 +148,7 @@ function renderActorsSection(actors) {
 }
 
 watchMovies(movies => { state.movies = movies; renderSections(); }, showError);
+watchAds(ads => { state.ads = ads; renderSections(); }, () => {});
 watchHeroes(heroes => renderHero(heroes), showError);
 watchCategories(categories => { state.categories = categories; renderSections(); }, showError);
 watchActors(renderActorsSection, () => renderActorsSection([]));
