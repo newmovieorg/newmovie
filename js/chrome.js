@@ -262,6 +262,7 @@ const FOOTER_HTML = `
       <a href="privacy.html">حریم خصوصی</a>
       <a href="terms.html">قوانین استفاده</a>
       <a href="ads.html">تبلیغات</a>
+      <a href="creator.html">درباره سازنده</a>
     </nav>
     <p class="footer-note">نیو مووی فایل ویدیویی را روی سایت میزبانی نمی‌کند.</p>
     <p class="footer-copyright">© ${new Date().getFullYear()} نیو مووی. تمامی حقوق محفوظ است.</p>
