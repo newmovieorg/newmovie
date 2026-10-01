@@ -46,3 +46,10 @@ export function watchActors(onData, onError) {
     onData(actors);
   }, onError);
 }
+
+export function watchAds(onData, onError) {
+  return onSnapshot(collection(db, "ads"), snap => {
+    const ads = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(a => a.active !== false);
+    onData(ads);
+  }, onError);
+}
