@@ -236,11 +236,23 @@
   <!-- Actors: managed separately so the same actor can be reused across many movies/series -->
   <div class="admin-view" id="view-actors">
     <div class="admin-panel">
-      <h2>افزودن گروهی بازیگر با اسم</h2>
-      <p class="admin-help">چندتا اسم رو با کاما جدا کن (مثل: Jackie Chan, Ma Li, Qiao Shan) — هرکدوم از قبل توی لیست بود نادیده گرفته می‌شه، بقیه فقط با همون اسم (بدون عکس) ساخته می‌شن. بعداً از پایین می‌تونی روی هرکدوم عکس بذاری.</p>
-      <textarea id="actorBulkInput" rows="2" placeholder="مثلاً: Jackie Chan, Ma Li, Qiao Shan"></textarea>
-      <label class="actor-featured-toggle"><input type="checkbox" id="actorBulkFeatured"><span>همه‌ی این‌ها «نمایش عمومی» هم داشته باشن</span></label>
-      <button type="button" class="btn btn-primary" id="actorBulkBtn">افزودن گروهی</button>
+      <h2>افزودن گروهی بازیگر (Google Sheets / CSV)</h2>
+      <p class="admin-help">دقیقاً مثل افزودن گروهی فیلم: ستون‌ها <code>name</code> (نام)، <code>photoUrl</code> (لینک تصویر)، <code>nationality</code> (ملیت) و <code>featured</code> (اختیاری — <code>true</code> یعنی نمایش عمومی). بازیگری که اسمش از قبل باشه آپدیت می‌شه (فقط ستون‌های پُر — خالی‌بودن یه سلول اطلاعات قبلی رو پاک نمی‌کنه)؛ بقیه جدید ساخته می‌شن.<br>
+        ۱) «دانلود قالب CSV» رو بزن، توی Google Sheets: <em>File ← Import ← Upload</em>.<br>
+        ۲) بازیگرها رو زیر ردیف نمونه پر کن، بعد همه‌ی سلول‌ها (با ردیف عنوان‌ها) رو کپی کن و توی کادر پایین بچسبون — یا از <em>File ← Download ← CSV</em> فایل بگیر و آپلود کن.</p>
+      <button type="button" class="btn-small" id="actorBulkTemplateBtn">دانلود قالب CSV (برای Google Sheets)</button>
+
+      <div class="field" style="margin-top:16px;">
+        <label>روش ۱ — چسباندن مستقیم از Google Sheets</label>
+        <textarea id="actorBulkPasteInput" rows="5" placeholder="سلول‌های کپی‌شده از Google Sheets رو اینجا Paste کن (ردیف اول باید عنوان ستون‌ها باشه)"></textarea>
+      </div>
+      <button class="btn btn-primary" id="actorBulkPasteBtn">افزودن از متن چسبانده‌شده</button>
+
+      <div class="field" style="margin-top:20px;">
+        <label>روش ۲ — آپلود فایل (csv یا xlsx)</label>
+        <input type="file" id="actorBulkFile" accept=".xlsx,.xls,.csv">
+      </div>
+      <button class="btn btn-primary" id="actorBulkFileBtn">شروع افزودن از فایل</button>
       <p class="status-msg" id="actorBulkStatus"></p>
     </div>
     <div class="admin-panel">
@@ -250,6 +262,7 @@
         <div class="field"><label>نام بازیگر</label><input type="text" id="actorName" placeholder="مثلاً: علی نصیریان"></div>
         <div class="field"><label>لینک عکس (دایره‌ای نمایش داده می‌شود)</label><input type="text" id="actorPhoto" placeholder="https://..."></div>
       </div>
+      <div class="field"><label>ملیت</label><input type="text" id="actorNationality" placeholder="مثلاً: ایرانی، آمریکایی، کره‌ای"></div>
       <label class="actor-featured-toggle"><input type="checkbox" id="actorFeatured"><span>نمایش عمومی (صفحه اصلی + فهرست کامل بازیگران)</span></label>
       <button class="btn btn-primary" id="saveActorBtn">افزودن بازیگر</button>
       <button class="btn-small" id="cancelActorEditBtn" style="display:none;">انصراف از ویرایش</button>
