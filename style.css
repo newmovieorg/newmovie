@@ -1401,3 +1401,5 @@ body.hero-page .site-header.scrolled {
 }
 .social-btn svg { width: 16px; height: 16px; }
 .social-btn:hover { border-color: var(--brand); color: var(--paper); }
+
+.actor-profile-nationality { color: var(--paper-dim); font-size: 0.9rem; margin: 0 0 4px; }
