@@ -165,7 +165,13 @@ async function initDashboard() {
   document.getElementById("cancelGenreEditBtn").addEventListener("click", resetGenreForm);
   document.getElementById("saveActorBtn").addEventListener("click", saveActor);
   document.getElementById("cancelActorEditBtn").addEventListener("click", resetActorForm);
-  document.getElementById("actorBulkBtn").addEventListener("click", bulkAddActors);
+  document.getElementById("actorBulkTemplateBtn").addEventListener("click", downloadActorBulkTemplateCsv);
+  document.getElementById("actorBulkPasteBtn").addEventListener("click", handleActorBulkPaste);
+  document.getElementById("actorBulkFileBtn").addEventListener("click", () => {
+    const file = document.getElementById("actorBulkFile").files[0];
+    if (!file) { setStatus("actorBulkStatus", "اول یه فایل انتخاب کن.", false); return; }
+    handleActorBulkFile(file);
+  });
   document.getElementById("mCastSearch").addEventListener("input", () => renderCastPicker(getSelectedCastIds()));
   document.getElementById("mCastBulkBtn").addEventListener("click", applyCastBulkInput);
   document.getElementById("bulkTemplateBtn").addEventListener("click", downloadBulkTemplate);
@@ -355,6 +361,7 @@ async function loadActors() {
       editingActorId = actor.id;
       document.getElementById("actorName").value = actor.name || "";
       document.getElementById("actorPhoto").value = actor.photoUrl || "";
+      document.getElementById("actorNationality").value = actor.nationality || "";
       document.getElementById("actorFeatured").checked = Boolean(actor.featured);
       document.getElementById("saveActorBtn").textContent = "ذخیره تغییرات";
       document.getElementById("cancelActorEditBtn").style.display = "inline-flex";
@@ -465,37 +472,116 @@ async function applyCastBulkInput() {
   }
 }
 
-// دکمه‌ی «افزودن گروهی» توی تب بازیگران — برخلاف applyCastBulkInput (که برای
-// انتخاب کست یه فیلمه)، این یکی مستقیماً توی لیست اصلی بازیگرها می‌سازه/آپدیت
-// می‌کنه، بدون اینکه به هیچ فیلمی وصل باشه.
-async function bulkAddActors() {
-  const raw = document.getElementById("actorBulkInput").value;
-  const names = raw.split(",").map(s => s.trim()).filter(Boolean);
-  if (!names.length) { setStatus("actorBulkStatus", "اول چندتا اسم وارد کن.", false); return; }
-  const makeFeatured = document.getElementById("actorBulkFeatured").checked;
-  const btn = document.getElementById("actorBulkBtn");
-  setButtonLoading(btn, true);
-  try {
-    let created = 0, matched = 0;
-    for (const name of names) {
+// ---------- Bulk actor import (Google Sheets / CSV / Excel) ----------
+// دقیقاً همون الگوی افزودن گروهی فیلم (همون پارسر CSV/TSV)، فقط با ستون‌های بازیگر.
+// بازیگری که اسمش از قبل توی لیست باشه آپدیت می‌شه (فقط ستون‌هایی که پر باشن —
+// خالی‌بودن یه سلول، اطلاعات قبلی رو پاک نمی‌کنه)؛ بقیه به‌عنوان بازیگر جدید ساخته می‌شن.
+
+const ACTOR_BULK_HEADERS = ["name", "photoUrl", "nationality", "featured"];
+const ACTOR_BULK_EXAMPLE = {
+  name: "Jackie Chan", photoUrl: "https://example.com/jackie.jpg", nationality: "هنگ‌کنگی", featured: "false"
+};
+const ACTOR_BULK_FORMAT_ERROR = "ردیف اول باید عنوان ستون‌ها باشه (name, photoUrl, nationality, featured) — مثل قالب نمونه.";
+
+function downloadActorBulkTemplateCsv() {
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const csv = "\uFEFF" + ACTOR_BULK_HEADERS.map(q).join(",") + "\r\n" +
+    ACTOR_BULK_HEADERS.map(h => q(ACTOR_BULK_EXAMPLE[h] ?? "")).join(",") + "\r\n";
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = "قالب-افزودن-گروهی-بازیگر.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importActorRows(rows) {
+  const statusEl = document.getElementById("actorBulkStatus");
+  let created = 0, updated = 0, skipped = 0;
+  const errors = [];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    statusEl.textContent = `در حال پردازش ردیف ${i + 1} از ${rows.length}...`;
+    const name = String(row.name || "").trim();
+    if (!name) { skipped++; errors.push(`ردیف ${row.__row ?? i + 2}: ستون name خالیه`); continue; }
+    try {
+      const photoUrl = String(row.photoUrl || "").trim();
+      const nationality = String(row.nationality || "").trim();
+      const featuredRaw = String(row.featured ?? "").trim().toLowerCase();
       const existing = allActorsCache.find(a => (a.name || "").trim().toLocaleLowerCase() === name.toLocaleLowerCase());
       if (existing) {
-        matched++;
-        if (makeFeatured && !existing.featured) {
-          await updateDoc(doc(db, "actors", existing.id), { featured: true });
+        const patch = {};
+        if (photoUrl) patch.photoUrl = photoUrl;
+        if (nationality) patch.nationality = nationality;
+        if (featuredRaw) patch.featured = featuredRaw === "true";
+        if (Object.keys(patch).length) {
+          await updateDoc(doc(db, "actors", existing.id), patch);
+          Object.assign(existing, patch);
+          updated++;
         }
       } else {
-        await addDoc(collection(db, "actors"), { name, photoUrl: "", featured: makeFeatured, createdAt: serverTimestamp() });
+        const data = { name, photoUrl, nationality, featured: featuredRaw === "true", createdAt: serverTimestamp() };
+        const ref = await addDoc(collection(db, "actors"), data);
+        allActorsCache.push({ id: ref.id, name, photoUrl, nationality, featured: data.featured });
         created++;
       }
+    } catch (e) {
+      console.error("actor bulk row failed", e);
+      skipped++;
+      errors.push(`ردیف ${row.__row ?? i + 2} (${name}): خطا در ذخیره`);
     }
-    document.getElementById("actorBulkInput").value = "";
-    document.getElementById("actorBulkFeatured").checked = false;
-    setStatus("actorBulkStatus", `${created} بازیگر جدید ساخته شد${matched ? `، ${matched} تا از قبل توی لیست بودن` : ""}.`);
+  }
+
+  statusEl.innerHTML = `تمام شد — ${created} بازیگر جدید، ${updated} بازیگر آپدیت شد${skipped ? `، ${skipped} ردیف رد شد` : ""}.` +
+    (errors.length ? `<br><span style="color:#ff6b6b;">${errors.slice(0, 10).map(escapeHTML).join("<br>")}</span>` : "");
+  if (created || updated) {
+    document.getElementById("actorBulkFile").value = "";
+    document.getElementById("actorBulkPasteInput").value = "";
     await loadActors();
+    showToast(`${created + updated} بازیگر پردازش شد`);
+  }
+}
+
+async function handleActorBulkFile(file) {
+  const btn = document.getElementById("actorBulkFileBtn");
+  setButtonLoading(btn, true, "در حال خواندن فایل...");
+  try {
+    let matrix;
+    if (/\.csv$/i.test(file.name)) {
+      const text = await file.text();
+      matrix = parseDelimited(text, detectDelimiter(text));
+    } else {
+      if (typeof XLSX === "undefined") {
+        setStatus("actorBulkStatus", "کتابخانه‌ی اکسل لود نشد — فایل رو CSV کن یا از کادر چسباندن استفاده کن.", false);
+        return;
+      }
+      const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      matrix = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
+    }
+    const rows = rowsFromMatrix(matrix, ACTOR_BULK_HEADERS, "name");
+    if (!rows) { setStatus("actorBulkStatus", ACTOR_BULK_FORMAT_ERROR, false); return; }
+    if (!rows.length) { setStatus("actorBulkStatus", "هیچ ردیف داده‌ای زیر عنوان ستون‌ها پیدا نشد.", false); return; }
+    await importActorRows(rows);
   } catch (e) {
-    console.error("bulk actor add failed", e);
-    setStatus("actorBulkStatus", "خطا در افزودن گروهی.", false);
+    console.error("actor bulk import failed", e);
+    setStatus("actorBulkStatus", "خطا در خواندن فایل — مطمئن شو مثل قالب نمونه‌ست.", false);
+  } finally {
+    setButtonLoading(btn, false);
+  }
+}
+
+async function handleActorBulkPaste() {
+  const text = document.getElementById("actorBulkPasteInput").value;
+  if (!text.trim()) { setStatus("actorBulkStatus", "اول سلول‌های کپی‌شده از گوگل شیتس رو توی کادر بچسبون.", false); return; }
+  const btn = document.getElementById("actorBulkPasteBtn");
+  setButtonLoading(btn, true, "در حال پردازش...");
+  try {
+    const rows = rowsFromMatrix(parseDelimited(text, detectDelimiter(text)), ACTOR_BULK_HEADERS, "name");
+    if (!rows) { setStatus("actorBulkStatus", ACTOR_BULK_FORMAT_ERROR, false); return; }
+    if (!rows.length) { setStatus("actorBulkStatus", "هیچ ردیف داده‌ای زیر عنوان ستون‌ها پیدا نشد.", false); return; }
+    await importActorRows(rows);
+  } catch (e) {
+    console.error("actor bulk paste failed", e);
+    setStatus("actorBulkStatus", "خطا در پردازش متن چسبانده‌شده.", false);
   } finally {
     setButtonLoading(btn, false);
   }
@@ -505,15 +591,16 @@ async function saveActor() {
   const name = document.getElementById("actorName").value.trim();
   if (!name) { setStatus("actorStatus", "نام بازیگر را وارد کن.", false); return; }
   const photoUrl = document.getElementById("actorPhoto").value.trim();
+  const nationality = document.getElementById("actorNationality").value.trim();
   const featured = document.getElementById("actorFeatured").checked;
   const btn = document.getElementById("saveActorBtn");
   setButtonLoading(btn, true);
   try {
     if (editingActorId) {
-      await updateDoc(doc(db, "actors", editingActorId), { name, photoUrl, featured });
+      await updateDoc(doc(db, "actors", editingActorId), { name, photoUrl, nationality, featured });
       setStatus("actorStatus", "بازیگر ویرایش شد.");
     } else {
-      await addDoc(collection(db, "actors"), { name, photoUrl, featured, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "actors"), { name, photoUrl, nationality, featured, createdAt: serverTimestamp() });
       setStatus("actorStatus", "بازیگر اضافه شد.");
     }
     resetActorForm();
@@ -529,10 +616,12 @@ function resetActorForm() {
   editingActorId = null;
   const nameInput = document.getElementById("actorName");
   const photoInput = document.getElementById("actorPhoto");
+  const nationalityInput = document.getElementById("actorNationality");
   const featuredInput = document.getElementById("actorFeatured");
   const button = document.getElementById("saveActorBtn");
   if (nameInput) nameInput.value = "";
   if (photoInput) photoInput.value = "";
+  if (nationalityInput) nationalityInput.value = "";
   if (featuredInput) featuredInput.checked = false;
   if (button) button.textContent = "افزودن بازیگر";
   const cancel = document.getElementById("cancelActorEditBtn");
@@ -925,17 +1014,21 @@ function detectDelimiter(text) {
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
 }
 
-// ردیف اول = عنوان ستون‌ها (بدون حساسیت به حروف بزرگ/کوچک). اگه ستون title نباشه null برمی‌گردونه.
-function rowsFromMatrix(matrix) {
+// ردیف اول = عنوان ستون‌ها (بدون حساسیت به حروف بزرگ/کوچک). اگه ستون requiredColumn
+// نباشه null برمی‌گردونه. هم افزودن گروهی فیلم هم بازیگر از همین تابع استفاده می‌کنن.
+function rowsFromMatrix(matrix, knownHeaders, requiredColumn) {
   if (!matrix.length) return null;
   const headers = matrix[0].map(h => {
     const t = String(h).trim();
-    return BULK_HEADERS.find(k => k.toLowerCase() === t.toLowerCase()) || t;
+    return knownHeaders.find(k => k.toLowerCase() === t.toLowerCase()) || t;
   });
-  if (!headers.includes("title")) return null;
+  if (!headers.includes(requiredColumn)) return null;
+  // __row = شماره‌ی واقعی ردیف توی شیت (قبل از حذف ردیف‌های خالی) — برای اینکه
+  // پیام خطا دقیقاً به همون ردیفی اشاره کنه که توی گوگل شیتس می‌بینی.
   return matrix.slice(1)
-    .filter(r => r.some(c => String(c).trim() !== ""))
-    .map(r => Object.fromEntries(headers.map((h, i) => [h, r[i] ?? ""])));
+    .map((r, idx) => ({ r, rowNum: idx + 2 }))
+    .filter(({ r }) => r.some(c => String(c).trim() !== ""))
+    .map(({ r, rowNum }) => ({ ...Object.fromEntries(headers.map((h, i) => [h, r[i] ?? ""])), __row: rowNum }));
 }
 
 const BULK_FORMAT_ERROR = "ردیف اول باید عنوان ستون‌ها باشه (title, cast, genre, ...) — مثل قالب نمونه.";
@@ -948,7 +1041,7 @@ async function importMovieRows(rows, btn) {
     const row = rows[i];
     statusEl.textContent = `در حال پردازش ردیف ${i + 1} از ${rows.length}...`;
     const title = String(row.title || "").trim();
-    if (!title) { failed++; errors.push(`ردیف ${i + 2}: ستون title خالیه`); continue; }
+    if (!title) { failed++; errors.push(`ردیف ${row.__row ?? i + 2}: ستون title خالیه`); continue; }
     try {
       const categoryIds = row.genre ? await resolveNamesToGenreIds(row.genre) : [];
       const castIds = row.cast ? await resolveNamesToActorIds(row.cast) : [];
@@ -988,7 +1081,7 @@ async function importMovieRows(rows, btn) {
     } catch (e) {
       console.error("bulk row failed", e);
       failed++;
-      errors.push(`ردیف ${i + 2} (${title}): خطا در ذخیره`);
+      errors.push(`ردیف ${row.__row ?? i + 2} (${title}): خطا در ذخیره`);
     }
   }
 
@@ -1019,7 +1112,7 @@ async function handleBulkMovieFile(file) {
       const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
       matrix = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
     }
-    const rows = rowsFromMatrix(matrix);
+    const rows = rowsFromMatrix(matrix, BULK_HEADERS, "title");
     if (!rows) { setStatus("bulkImportStatus", BULK_FORMAT_ERROR, false); return; }
     if (!rows.length) { setStatus("bulkImportStatus", "هیچ ردیف داده‌ای زیر عنوان ستون‌ها پیدا نشد.", false); return; }
     await importMovieRows(rows, btn);
@@ -1037,7 +1130,7 @@ async function handleBulkPaste() {
   const btn = document.getElementById("bulkPasteImportBtn");
   setButtonLoading(btn, true, "در حال پردازش...");
   try {
-    const rows = rowsFromMatrix(parseDelimited(text, detectDelimiter(text)));
+    const rows = rowsFromMatrix(parseDelimited(text, detectDelimiter(text)), BULK_HEADERS, "title");
     if (!rows) { setStatus("bulkImportStatus", BULK_FORMAT_ERROR, false); return; }
     if (!rows.length) { setStatus("bulkImportStatus", "هیچ ردیف داده‌ای زیر عنوان ستون‌ها پیدا نشد.", false); return; }
     await importMovieRows(rows, btn);
