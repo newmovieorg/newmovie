@@ -30,6 +30,9 @@ if (!id) {
 
     document.title = `${actor.name || "بازیگر"} | نیو مووی`;
     document.getElementById("actorProfileName").textContent = actor.name || "";
+    const natEl = document.getElementById("actorProfileNationality");
+    natEl.textContent = actor.nationality ? `ملیت: ${actor.nationality}` : "";
+    natEl.hidden = !actor.nationality;
     const photoBox = document.getElementById("actorProfilePhoto");
     photoBox.innerHTML = actor.photoUrl
       ? `<img src="${escapeHTML(actor.photoUrl)}" alt="${escapeHTML(actor.name || "")}" onerror="this.remove()">`
