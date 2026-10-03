@@ -278,15 +278,18 @@ function adCardHTML(ad) {
   const title = escapeHTML(ad.title || "");
   const imageUrl = escapeHTML(ad.imageUrl || "");
   const linkUrl = escapeHTML(ad.linkUrl || "#");
+  // نکته: کلاس «sponsored-card» عمداً با «ad-card» فرق داره — ad-card مال صفحه‌ی
+  // اطلاعات تبلیغات (ads.html) با padding: 26px ـه و روی کارت گرید هم اعمال می‌شد
+  // و اندازه‌ی پوستر رو کوچیک می‌کرد.
+  // برچسب Ads عمداً روی تصویر نیست: توی بدنه‌ی کارته، با رنگ پررنگ.
   return `
-    <a class="card ad-card" href="${linkUrl}" target="_blank" rel="noopener sponsored">
+    <a class="card sponsored-card" href="${linkUrl}" target="_blank" rel="noopener sponsored">
       <div class="card-poster">
-        ${imageUrl ? `<img class="card-poster-img" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async">` : ""}
-        <span class="ads-badge">Ads</span>
+        ${imageUrl ? `<img class="card-poster-img" src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" onerror="this.hidden=true;this.parentElement.classList.add('poster-missing')">` : ""}
       </div>
       <div class="card-body">
         <p class="card-title">${title}</p>
-        <p class="card-meta">${escapeHTML(ad.description || "")}</p>
+        <div class="card-meta ads-meta"><span class="ads-pill">Ads</span><span class="ads-desc">${escapeHTML(ad.description || "")}</span></div>
       </div>
     </a>
   `;
